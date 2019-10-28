@@ -4,7 +4,7 @@ endif
 let loaded_hexedit = 1
 
 let g:group_octets_num = get(g:, 'group_octets_num', 2)
-let g:octets_per_line  = get(g:, 'octets_per_line' , 9)
+let g:octets_per_line  = get(g:, 'octets_per_line' , 17)
 let g:hexmode_low_up   = get(g:, 'hexmode_lower_upper', ' -u ')
 
 let g:hexmode_xxd_options = get(g:, 'hexmode_xxd_options', '')
@@ -64,7 +64,16 @@ if has("autocmd")
             \ endif
 
         au CursorMoved *
-            \ call g:HexEditEvent.OnCursorMoved('a')
+            \ call g:HexEditEvent.OnCursorMoved('normal')
+
+        au InsertEnter,CursorMovedI *
+            \ call g:HexEditEvent.OnCursorMoved('insert')
+
+        au TextChanged *
+            \ call g:HexEditEvent.OnTextChanged()
+
+        au TextChangedI *
+            \ call g:HexEditEvent.OnTextChangedI()
 
         au BufUnload *
             \ if getbufvar(expand("<afile>"), 'editHex') == 1 |
@@ -88,7 +97,8 @@ if has("autocmd")
             \  let b:oldro=&l:ro | let &l:ro=0 |
             \  let b:oldma=&l:ma | let &l:ma=1 |
             \  undojoin |
-            \  silent exe "%!xxd " . g:hexmode_xxd_options |
+            \  call g:HexEditEvent.OpenHexMode() |
+            "\  silent exe "%!xxd " . g:hexmode_xxd_options |
             \  exe "setlocal nomod" |
             \  let &l:ma=b:oldma | let &l:ro=b:oldro |
             \  unlet b:oldma | unlet b:oldro |
