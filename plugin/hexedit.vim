@@ -66,7 +66,7 @@ if has("autocmd")
         au CursorMoved *
             \ call g:HexEditEvent.OnCursorMoved('normal')
 
-        au InsertEnter,CursorMovedI *
+        au CursorMovedI *
             \ call g:HexEditEvent.OnCursorMoved('insert')
 
         au TextChanged *

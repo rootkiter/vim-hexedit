@@ -14,8 +14,8 @@ function! s:hexedit_ui.OpenHexMode()
     let s:hex_area_size   = s:group_cell_size*l:group_num + l:group_left_size
     silent exe "%!xxd " . g:hexmode_xxd_options
                 \ . "| sed 's/:\\(.\\{".s:hex_area_size."\\}\\)  /:\\1  | /g'"
-    let l:line_size = line("$")
-    if !l:line_size > 0
+    let s:Max_Line_number = line("$")
+    if !s:Max_Line_number > 0
         return
     endif
     let l:curline1 = getline(1)
@@ -52,8 +52,31 @@ function! s:hexedit_ui.columnType(colnum)
         return ['hex',l:lv2, s:current_line_number_size+2, l:hex_end_off-1, s:current_line_number_size+1, l:hex_end_off+4]
     elseif a:colnum < l:hex_end_off+4
         return ['hex-sepa', 'space', l:hex_end_off, l:hex_end_off+3, l:hex_end_off-1, l:hex_end_off+4]
-    elseif a:colnum <= l:hex_end_off+4+s:current_line_char_area_size
+    elseif a:colnum < l:hex_end_off+4+s:current_line_char_area_size
         return ['char', 'data', l:hex_end_off+4, l:hex_end_off+g:octets_per_line+3, l:hex_end_off-1, 0]
+    else
+        return ['limit', 'space', 0, 0, s:current_line_max_size, l:hex_end_off+4]
+    endif
+endfunction
+
+function! s:hexedit_ui.moreInput(area, next_min, curline, char)
+    if a:area == 'char'
+        if s:current_line_char_area_size == g:octets_per_line
+            " input char to nextline
+            if s:Max_Line_number >= a:curline+1
+                let l:next_line = getline(a:curline+1)
+                let l:linetmp   = l:next_line[0:a:next_min-2].a:char.l:next_line[a:next_min:]
+                let l:next_line = s:hexedit_ui.lineUpdate(l:linetmp, 'char', 0)
+                call setline(a:curline+1, l:next_line)
+                call cursor (a:curline+1, a:next_min+1)
+            else
+                " append new line
+                " calc new line hex-off && update newline number
+            endif
+        else
+            " append char to current-line's tail
+        endif
+    " elseif a:area == 'hex'
     endif
 endfunction
 
@@ -78,14 +101,14 @@ function! s:hexedit_ui.OnCursorMoved(mode)
     endif
 
     let l:current_line = getline(".")
-    call s:hexedit_ui.UpdateCurrentLine(l:current_line)
     let [l:cur_line, l:cur_col] = getpos('.')[1:2]
     if a:mode == 'normal'
+        call s:hexedit_ui.UpdateCurrentLine(l:current_line)
         let l:new_col = s:hexedit_ui.fixCursor(l:cur_col)
         call cursor(l:cur_line, l:new_col)
     elseif a:mode == 'insert'
-        let l:new_col = s:hexedit_ui.fixCursor(l:cur_col-1)
-        call cursor(l:cur_line, l:new_col+1)
+        let l:new_col = s:hexedit_ui.fixCursor(l:cur_col)
+        call cursor(l:cur_line, l:new_col)
     endif
 endfunction
 
@@ -158,26 +181,48 @@ function! s:hexedit_ui.OnTextChangedI()
     endif
 
     let l:current_line = getline('.')
+    let [l:cur_line, l:cur_col] = getpos('.')[1:2]
 
-    " call setline(32, len(l:current_line).":".s:current_line_max_size)
-    if len(l:current_line) != s:current_line_max_size+1
+    if len(l:current_line) > s:current_line_max_size+1
+        call setline(l:cur_line, l:current_line[0:s:current_line_max_size])
+        return
+    elseif len(l:current_line) < s:current_line_max_size+1
         return
     endif
-    let [l:cur_line, l:cur_col] = getpos('.')[1:2]
+
     let [l:area, l:lv2, l:cmin, l:cmax, l:bmax, l:nmin] =
-        \ s:hexedit_ui.columnType(l:cur_col-2)
+        \ s:hexedit_ui.columnType(l:cur_col-1)
 
     if l:area == 'hex' && l:lv2 == 'data'
         let l:current_line = l:current_line[0:l:cur_col-2].l:current_line[l:cur_col:]
-        let l:bt_off = s:hexedit_ui.ByteOffCalc(l:area, l:cur_col-2)
+        let l:bt_off = s:hexedit_ui.ByteOffCalc(l:area, l:cur_col-1)
         let l:current_line = s:hexedit_ui.lineUpdate(l:current_line, l:area, l:bt_off)
     elseif l:area == 'hex' && l:lv2 == 'space'
-        --------------------------------------------
         let l:curr_char = l:current_line[l:cur_col-3]
-        let l:linetmp   = l:current_line[0:l:cur_col-4] .' '.l:curr_char.l:current_line[l:cur_col:]
+        let l:linetmp   = l:current_line[0:l:cur_col-3] .l:current_line[l:cur_col-1:]
+        let l:bt_off    = s:hexedit_ui.ByteOffCalc(l:area, l:cur_col-3)
+        let l:current_line = s:hexedit_ui.lineUpdate(l:linetmp, l:area, l:bt_off)
+        " let l:current_line = l:linetmp
+    elseif l:area == 'hex-sepa'
+        let l:curr_char = l:current_line[l:cur_col-6]
+        let l:linetmp   = l:current_line[0:l:cur_col-6] .l:current_line[l:cur_col-4:]
+        let l:bt_off    = s:hexedit_ui.ByteOffCalc('hex', l:cur_col-6)
+        let l:current_line = s:hexedit_ui.lineUpdate(l:linetmp, 'hex', l:bt_off)
+        if l:cur_line<s:Max_Line_number
+            call cursor(l:cur_line+1, s:current_line_number_size+3)
+            let l:newline = getline(l:cur_line+1)
+            call s:hexedit_ui.UpdateCurrentLine(l:newline)
+        endif
+    elseif l:area == 'char'
+        let l:curr_char = l:current_line[l:cur_col-2]
+        let l:linetmp   = l:current_line[0:l:cur_col-2] .l:current_line[l:cur_col:]
         let l:bt_off    = s:hexedit_ui.ByteOffCalc(l:area, l:cur_col-1)
         let l:current_line = s:hexedit_ui.lineUpdate(l:linetmp, l:area, l:bt_off)
+    else
+        let l:curr_char = l:current_line[l:cur_col-2]
+        let l:current_line = l:current_line[0:s:current_line_max_size-1]
+        call s:hexedit_ui.moreInput('char', l:nmin, l:cur_line, l:curr_char)
+        " call setline(32, "move to next line -> ".l:curr_char)
     endif
     call setline(l:cur_line, l:current_line)
-
 endfunction
