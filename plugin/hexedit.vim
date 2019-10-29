@@ -4,7 +4,7 @@ endif
 let loaded_hexedit = 1
 
 let g:group_octets_num = get(g:, 'group_octets_num', 2)
-let g:octets_per_line  = get(g:, 'octets_per_line' , 17)
+let g:octets_per_line  = get(g:, 'octets_per_line' , 16)
 let g:hexmode_low_up   = get(g:, 'hexmode_lower_upper', ' -u ')
 
 let g:hexmode_xxd_options = get(g:, 'hexmode_xxd_options', '')

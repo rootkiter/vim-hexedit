@@ -40,6 +40,10 @@ function! s:hexedit_ui.UpdateCurrentLine(current_line)
 endfunction
 
 function! s:hexedit_ui.columnType(colnum)
+    if !exists('b:editHex') || b:editHex!=1 |
+        return
+    endif
+
     let l:hex_end_off = s:current_line_number_size+s:current_line_hex_area_size+2
     if a:colnum<=s:current_line_number_size+1
         return ["addr", 'space', 1, s:current_line_number_size+1, 0, s:current_line_number_size+2]
@@ -60,6 +64,10 @@ function! s:hexedit_ui.columnType(colnum)
 endfunction
 
 function! s:hexedit_ui.moreInput(area, next_min, curline, char)
+    if !exists('b:editHex') || b:editHex!=1 |
+        return
+    endif
+
     if a:area == 'char'
         if s:current_line_char_area_size == g:octets_per_line
             " input char to nextline
@@ -81,6 +89,10 @@ function! s:hexedit_ui.moreInput(area, next_min, curline, char)
 endfunction
 
 function! s:hexedit_ui.fixCursor(colnum)
+    if !exists('b:editHex') || b:editHex!=1 |
+        return
+    endif
+
     let l:colnum = a:colnum
     let [l:area, l:lv2, l:cmin, l:cmax, l:bmax, l:nmin] = s:hexedit_ui.columnType(colnum)
     if l:area == 'addr'
@@ -101,18 +113,19 @@ function! s:hexedit_ui.OnCursorMoved(mode)
     endif
 
     let l:current_line = getline(".")
-    let [l:cur_line, l:cur_col] = getpos('.')[1:2]
     if a:mode == 'normal'
         call s:hexedit_ui.UpdateCurrentLine(l:current_line)
-        let l:new_col = s:hexedit_ui.fixCursor(l:cur_col)
-        call cursor(l:cur_line, l:new_col)
-    elseif a:mode == 'insert'
-        let l:new_col = s:hexedit_ui.fixCursor(l:cur_col)
-        call cursor(l:cur_line, l:new_col)
     endif
+    let [l:cur_line, l:cur_col] = getpos('.')[1:2]
+    let l:new_col = s:hexedit_ui.fixCursor(l:cur_col)
+    call cursor(l:cur_line, l:new_col)
 endfunction
 
 function! s:hexedit_ui.ByteOffCalc(area, colnum)
+    if !exists('b:editHex') || b:editHex!=1 |
+        return
+    endif
+
     if a:area == 'hex'
         let l:hex_off = a:colnum-s:current_line_number_size-2
         let l:group_id   = l:hex_off / s:group_cell_size
@@ -129,6 +142,10 @@ function! s:hexedit_ui.ByteOffCalc(area, colnum)
 endfunction
 
 function! s:hexedit_ui.lineUpdate(curline, area, bt_off)
+    if !exists('b:editHex') || b:editHex!=1 |
+        return
+    endif
+
     let l:curline = a:curline
     let l:group_id   = a:bt_off / g:group_octets_num
     let l:group_left = a:bt_off % g:group_octets_num
