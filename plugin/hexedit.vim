@@ -39,7 +39,7 @@ function ToggleHex()
         " restore old options
         let &l:ft = b:oldft
         " return to normal editing
-        call g:HexEditEvent .CursorCmdHook('uninstall')
+        call g:HexEditEvent.CursorCmdHook('uninstall')
         silent exe "%!xxd -r " . g:hexmode_xxd_options
         " set status
         let b:editHex=0
