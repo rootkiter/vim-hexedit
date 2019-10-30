@@ -30,6 +30,7 @@ function ToggleHex()
         let b:editHex=1
         " switch to hex editor
         call g:HexEditEvent.OpenHexMode()
+        call g:HexEditEvent.CursorCmdHook('install')
         " silent exe "%!xxd " . g:hexmode_xxd_options
         " set new options
         let &l:ft="xxd"
@@ -38,6 +39,7 @@ function ToggleHex()
         " restore old options
         let &l:ft = b:oldft
         " return to normal editing
+        call g:HexEditEvent .CursorCmdHook('uninstall')
         silent exe "%!xxd -r " . g:hexmode_xxd_options
         " set status
         let b:editHex=0

@@ -79,10 +79,11 @@ function! s:hexedit_ui.moreInput(area, next_min, curline, curcol, char)
                 call cursor (a:curline+1, a:next_min+1)
             else
                 " append new line
-                " let l:curline_number = 0+"0x".a:curline[0:s:current_line_number_size]
                 let l:cur_line = getline(a:curline)
-                let l:cur_num  = "0x".l:cur_line[0:s:current_line_number_size-1]+0+g:octets_per_line
-                let l:next_num = printf("%0".s:current_line_number_size."X:", l:cur_num)
+                let l:cur_num  = "0x".l:cur_line[0:s:current_line_number_size-1]+0
+                            \+g:octets_per_line
+                let l:next_num = printf("%0".s:current_line_number_size."X:",
+                            \l:cur_num)
                 let l:hex_tmp  = char2nr(a:char)
                 let l:hex_data = printf(" %02X", l:hex_tmp)
                 let l:nop_space = printf("%".(s:current_line_hex_area_size-3)."s", " " )
@@ -95,9 +96,10 @@ function! s:hexedit_ui.moreInput(area, next_min, curline, curcol, char)
         else
             " append char to current-line's tail
             let l:bt_off = s:current_line_char_area_size
-            let l:cur_line = getline(a:curline)
+            let l:cur_line = getline(a:curline).a:char
             let l:cur_line = s:hexedit_ui.lineUpdate(l:cur_line, 'char', l:bt_off)
             call setline(a:curline, l:cur_line)
+            call cursor (a:curline, a:curcol+1)
         endif
     elseif a:area == 'hex'
         if s:current_line_char_area_size == g:octets_per_line
@@ -286,15 +288,6 @@ function! s:hexedit_ui.OnTextChangedI()
         let l:curr_char    = l:current_line[l:cur_col-2]
         let l:current_line = l:current_line[0:l:cur_col-3]." " .l:current_line[l:cur_col:]
         call s:hexedit_ui.moreInput('hex', l:cmin, l:cur_line, l:cur_col, l:curr_char)
-        " call setline(7, l:area.";".l:lv2.":".l:curr_char)
-        " call setline(7, l:linetmp)
-        " let l:bt_off    = s:hexedit_ui.ByteOffCalc('hex', l:cur_col-6)
-        " let l:current_line = s:hexedit_ui.lineUpdate(l:linetmp, 'hex', l:bt_off)
-        " if l:cur_line<s:Max_Line_number
-        "     call cursor(l:cur_line+1, s:current_line_number_size+3)
-        "     let l:newline = getline(l:cur_line+1)
-        "     call s:hexedit_ui.UpdateCurrentLine(l:newline)
-        " endif
     elseif l:area == 'char'
         let l:curr_char = l:current_line[l:cur_col-2]
         let l:linetmp   = l:current_line[0:l:cur_col-2] .l:current_line[l:cur_col:]
@@ -302,12 +295,60 @@ function! s:hexedit_ui.OnTextChangedI()
         let l:current_line = s:hexedit_ui.lineUpdate(l:linetmp, l:area, l:bt_off)
     else
         let l:curr_char = l:current_line[l:cur_col-2]
-        let l:current_line = l:current_line[0:s:current_line_max_size-1]
+
+        if s:current_line_max_size < len(l:current_line)
+            let l:current_line = l:current_line[0:s:current_line_max_size-1]
+            call setline(l:cur_line, l:current_line)
+        endif
         call s:hexedit_ui.moreInput('char', l:nmin, l:cur_line, l:cur_col, l:curr_char)
         let l:setline_flag = 0
-        " call setline(32, "move to next line -> ".l:curr_char)
     endif
     if l:setline_flag == 1
         call setline(l:cur_line, l:current_line)
+    endif
+endfunction
+
+function! s:hexedit_ui.cursorCmdHook(cmd)
+    let [l:cur_line, l:cur_col] = getpos('.')[1:2]
+    let [l:area, l:lv2, l:cmin, l:cmax, l:bmax, l:nmin] =
+                \g:HexEditEvent.columnType(l:cur_col-1)
+
+    if l:area == 'hex'
+        if (l:lv2 == 'data' && a:cmd == 'h') || a:cmd == 'b'
+            exec "normal! ".a:cmd
+        elseif l:lv2 =='space'
+            call cursor(l:cur_line, l:cur_col-2)
+        endif
+    elseif l:area == 'hex-sepa'
+        if a:cmd == 'h' || a:cmd == 'b'
+            call cursor(l:cur_line, l:bmax)
+        endif
+    elseif l:area == 'char'
+        exec "normal! ".a:cmd
+    endif
+endfunction
+
+function! s:hexedit_ui.insertKeyTrigger(key)
+    " if a:key == "CR"
+    "     exec "normal l"
+    " elseif a:key == 'BS'
+    "     exec "normal h"
+    " endif
+endfunction
+
+function! s:hexedit_ui.CursorCmdHook(mode)
+    let l:cmdkeys = ['h', 'b']
+    if a:mode == 'install'
+        for key in l:cmdkeys
+            exec "nnoremap <silent> ".key." :call g:HexEditEvent.cursorCmdHook(\"".key."\") <CR>"
+        endfor
+        inoremap <silent> <CR> <ESC>:call g:HexEditEvent.insertKeyTrigger("CR")<CR>a
+        inoremap <silent> <BS> <ESC>:call g:HexEditEvent.insertKeyTrigger("BS")<CR>a
+    elseif a:mode == 'uninstall'
+        for key in l:cmdkeys
+            exec "nunmap ".key
+        endfor
+        iunmap <BS>
+        iunmap <CR>
     endif
 endfunction
