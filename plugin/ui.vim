@@ -328,6 +328,19 @@ function! s:hexedit_ui.cursorCmdHook(cmd)
     endif
 endfunction
 
+function! s:hexedit_ui.OnInputCharacter()
+    if !exists('b:editHex') || b:editHex!=1 |
+        return
+    endif
+
+    let s:char = v:char
+    echom "CurrentInput -> ".v:char
+endfunction
+
+function! s:hexedit_ui.KeepHex()
+
+endfunction
+
 function! s:hexedit_ui.insertKeyTrigger(key)
     " if a:key == "CR"
     "     exec "normal l"
@@ -337,6 +350,10 @@ function! s:hexedit_ui.insertKeyTrigger(key)
 endfunction
 
 function! s:hexedit_ui.CursorCmdHook(mode)
+    if !exists('b:editHex') || b:editHex!=1 |
+        return
+    endif
+
     let l:cmdkeys = ['h', 'b']
     if a:mode == 'install'
         for key in l:cmdkeys
