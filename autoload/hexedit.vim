@@ -13,16 +13,31 @@ function! hexedit#loadClassFiles()
     runtime lib/hexedit_ui.vim
 endfunction
 
-function! hexedit#ToggleHexEdit()
+function! hexedit#toggle(new_ui)
+    let l:curr_mode = ''
     if g:HexEditCurrentUI != {}
+        let l:curr_mode = g:HexEditCurrentUI.Name()
         call g:HexEditCurrentUI.Stop()
+        let g:HexEditCurrentUI = {}
     endif
-    let g:HexEditCurrentUI = g:HexEditUI
-    call g:HexEditCurrentUI.StartUp()
+
+    if l:curr_mode != a:new_ui.Name()
+        let g:HexEditCurrentUI = a:new_ui
+        call g:HexEditCurrentUI.StartUp()
+    endif
+endfunction
+
+function! hexedit#BuildInCommand(cmd)
+    if g:HexEditCurrentUI != {}
+        g:HexEditCurrentUI.BuildInCommand(a:cmd)
+    endif
+endfunction
+
+function! hexedit#ToggleHexEdit()
+    call hexedit#toggle(g:HexEditUI)
 endfunction
 
 function! hexedit#ToggleHexKeep()
-    echom "hexedit#ToggleHexKeep"
     let g:HexEditCurrentUI = {}
 endfunction
 
@@ -30,7 +45,6 @@ function! hexedit#OnBufNewFile()
     if &l:binary == 1
         call g:HexEditUI.CreateNewFile()
         let g:HexEditCurrentUI = g:HexEditUI
-        " call hexedit#ToggleHexEdit()
     endif
 endfunction
 

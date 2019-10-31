@@ -10,9 +10,18 @@ function! s:HexEditUI.Name()
 endfunction
 
 function! s:HexEditUI.hookInstall()
+    let l:cmdkeys = ['b','h']
+    for key in l:cmdkeys
+        exec "nnoremap <silent> ".key." :call g:HexEditUI.NormalKeyMap(\"".key."\") <CR>"
+    endfor
 endfunction
 
 function! s:HexEditUI.hookUninstall()
+    let l:cmdkeys = ['b', 'h']
+    for key in l:cmdkeys
+        exec "nunmap ".key
+    endfor
+    echom "hookUninstall"
 endfunction
 
 function! s:HexEditUI.StartUp()
@@ -41,6 +50,7 @@ endfunction
 function! s:HexEditUI.Stop()
     let &l:ft = b:oldft
     let b:hexEditMode = 0
+    silent exe "%!xxd -r ".g:hexmode_xxd_options
     call s:HexEditUI.hookUninstall()
 endfunction
 
@@ -92,6 +102,19 @@ function! s:HexEditUI.columnType(colnum)
         return ['char', 'data', l:hex_end_off+4, l:hex_end_off+g:octets_per_line+3, l:hex_end_off-1, 0]
     else
         return ['limit', 'space', 0, 0, s:current_line_max_size, l:hex_end_off+4]
+    endif
+endfunction
+
+function! s:HexEditUI.NormalKeyMap(key)
+    let [l:cur_line, l:cur_col] = getpos('.')[1:2]
+    let [l:area, l:lv2, l:cmin, l:cmax, l:bmax, l:nmin] =
+                \ s:HexEditUI.columnType(l:cur_col-1)
+    if l:area == 'hex' && l:lv2 == 'space' && a:key == 'h'
+        call cursor(l:cur_line, l:cur_col-2)
+    elseif l:area == 'hex-sepa'
+        call cursor(l:cur_line, l:bmax)
+    else
+        exec "normal! ".a:key
     endif
 endfunction
 
@@ -271,12 +294,13 @@ function! s:HexEditUI.allocNewLineAtTail(baseOffset)
     return l:curline
 endfunction
 
+function! s:HexEditUI.BuildInCommand(cmd)
+endfunction
+
 function! s:HexEditUI.OnBufReadPost()
-    echom "s:HexEditUI.OnBufReadPost"
 endfunction
 
 function! s:HexEditUI.OnInsertCharPre()
-    " echom "s:HexEditUI.OnInsertCharPre -> ".v:char
     let b:current_char = v:char
     let v:char = ''
     let [l:cur_line, l:cur_col] = getpos('.')[1:2]
@@ -288,7 +312,6 @@ function! s:HexEditUI.OnInsertCharPre()
 endfunction
 
 function! s:HexEditUI.OnBufUnload()
-    echom "s:HexEditUI.OnBufUnload"
 endfunction
 
 function! s:HexEditUI.OnBufWritePre()
