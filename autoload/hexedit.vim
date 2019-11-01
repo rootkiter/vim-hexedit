@@ -3,7 +3,6 @@ if exists("g:loaded_autoload_hexedit")
 endif
 let g:loaded_autoload_hexedit = 1
 
-let g:HexEditCurrentUI = {}
 
 function! hexedit#version()
     return '1.0.0'
@@ -11,25 +10,35 @@ endfunction
 
 function! hexedit#loadClassFiles()
     runtime lib/hexedit_ui.vim
+    runtime lib/hexkeep_ui.vim
+endfunction
+
+function! hexedit#HexEditInitEnv()
+    let b:HexEditCurrentUI = {}
+
 endfunction
 
 function! hexedit#toggle(new_ui)
     let l:curr_mode = ''
-    if g:HexEditCurrentUI != {}
-        let l:curr_mode = g:HexEditCurrentUI.Name()
-        call g:HexEditCurrentUI.Stop()
-        let g:HexEditCurrentUI = {}
+    if !exists("b:HexEditCurrentUI")
+        let b:HexEditCurrentUI = {}
+    endif
+
+    if b:HexEditCurrentUI != {}
+        let l:curr_mode = b:HexEditCurrentUI.Name()
+        call b:HexEditCurrentUI.Stop()
+        let b:HexEditCurrentUI = {}
     endif
 
     if l:curr_mode != a:new_ui.Name()
-        let g:HexEditCurrentUI = a:new_ui
-        call g:HexEditCurrentUI.StartUp()
+        let b:HexEditCurrentUI = a:new_ui
+        call b:HexEditCurrentUI.StartUp()
     endif
 endfunction
 
 function! hexedit#BuildInCommand(cmd)
-    if g:HexEditCurrentUI != {}
-        g:HexEditCurrentUI.BuildInCommand(a:cmd)
+    if b:HexEditCurrentUI != {}
+        b:HexEditCurrentUI.BuildInCommand(a:cmd)
     endif
 endfunction
 
@@ -38,13 +47,22 @@ function! hexedit#ToggleHexEdit()
 endfunction
 
 function! hexedit#ToggleHexKeep()
-    let g:HexEditCurrentUI = {}
+    if b:HexEditCurrentUI == {}
+        echom "CurrentUI == None"
+        return
+    elseif b:HexEditCurrentUI.Name() != "HexEditUI"
+        echom "HexKeep"
+        return
+   endif
+   call g:HexEditUI.QuitEditMode()
+   let b:HexEditCurrentUI = g:HexKeepUI
+   call b:HexEditCurrentUI.StartUp()
 endfunction
 
 function! hexedit#OnBufNewFile()
     if &l:binary == 1
         call g:HexEditUI.CreateNewFile()
-        let g:HexEditCurrentUI = g:HexEditUI
+        let b:HexEditCurrentUI = g:HexEditUI
     endif
 endfunction
 
@@ -55,43 +73,61 @@ function! hexedit#OnBufReadPost()
 endfunction
 
 function! hexedit#OnTextChanged()
-    if g:HexEditCurrentUI != {}
-        call g:HexEditCurrentUI.OnTextChanged()
+    if b:HexEditCurrentUI != {}
+        call b:HexEditCurrentUI.OnTextChanged()
     endif
 endfunction
 
 function! hexedit#OnCursorMoved()
-    if g:HexEditCurrentUI != {}
-        call g:HexEditCurrentUI.OnCursorMoved()
+    if b:HexEditCurrentUI != {}
+        call b:HexEditCurrentUI.OnCursorMoved()
     endif
 endfunction
 
 function! hexedit#OnCursorMovedI()
-    if g:HexEditCurrentUI != {}
-        call g:HexEditCurrentUI.OnCursorMovedI()
+    if b:HexEditCurrentUI != {}
+        call b:HexEditCurrentUI.OnCursorMovedI()
     endif
 endfunction
 
 function! hexedit#OnInsertCharPre()
-    if g:HexEditCurrentUI != {}
-        call g:HexEditCurrentUI.OnInsertCharPre()
+    if b:HexEditCurrentUI != {}
+        call b:HexEditCurrentUI.OnInsertCharPre()
     endif
 endfunction
 
 function! hexedit#OnBufWritePost()
-    if g:HexEditCurrentUI != {}
-        call g:HexEditCurrentUI.OnBufWritePost()
+    if b:HexEditCurrentUI != {}
+        call b:HexEditCurrentUI.OnBufWritePost()
     endif
 endfunction
 
 function! hexedit#OnBufUnload()
-    if g:HexEditCurrentUI != {}
-        call g:HexEditCurrentUI.OnBufUnload()
+    if b:HexEditCurrentUI != {}
+        call b:HexEditCurrentUI.OnBufUnload()
     endif
 endfunction
 
 function! hexedit#OnBufWritePre()
-    if g:HexEditCurrentUI != {}
-        call g:HexEditCurrentUI.OnBufWritePre()
+    if b:HexEditCurrentUI != {}
+        call b:HexEditCurrentUI.OnBufWritePre()
+    endif
+endfunction
+
+function! hexedit#OnBufLeave()
+    if !exists("b:HexEditCurrentUI")
+        let b:HexEditCurrentUI = {}
+    endif
+    if b:HexEditCurrentUI != {}
+        call b:HexEditCurrentUI.QuitEditMode()
+    endif
+endfunction
+
+function! hexedit#OnBufEnter()
+    if !exists("b:HexEditCurrentUI")
+        let b:HexEditCurrentUI = {}
+    endif
+    if b:HexEditCurrentUI != {}
+        call b:HexEditCurrentUI.EnterEditMode()
     endif
 endfunction

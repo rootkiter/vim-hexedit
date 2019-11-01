@@ -12,6 +12,7 @@ let g:hexmode_xxd_options = g:hexmode_xxd_options.
             \ ' -c '.g:octets_per_line.
             \ ' -g '.g:group_octets_num
 
+call hexedit#HexEditInitEnv()
 call hexedit#loadClassFiles()
 
 command -bar Hexedit call hexedit#ToggleHexEdit()
@@ -20,7 +21,6 @@ command -bar Hexkeep call hexedit#ToggleHexKeep()
 if has("autocmd")
     augroup Hexedit
         au!
-
         au BufNewFile    * call hexedit#OnBufNewFile()   
 
         au BufReadPost   * call hexedit#OnBufReadPost()
@@ -30,6 +30,8 @@ if has("autocmd")
         au TextChanged   * call hexedit#OnTextChanged()
 
         au BufUnload     * call hexedit#OnBufUnload()
+        au BufEnter      * call hexedit#OnBufEnter()
+        au BufLeave      * call hexedit#OnBufLeave()
 
         au InsertCharPre * call hexedit#OnInsertCharPre()
 

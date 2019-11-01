@@ -8,6 +8,13 @@ function! s:HexKeepUI.Name()
 endfunction
 
 function! s:HexKeepUI.StartUp()
+    let l:fmt = "%s/\\(\\x\\{8}\\):\\(.\\{40}\\)  | \\(.*\\)/\\2/g"
+    silent exec l:fmt
+    let l:hex_split = "%s/ \\(\\x\\{2}\\)\\(\\x\\{2}\\)/ \\1 \\2/g"
+    silent exec l:hex_split
+endfunction
+
+function! s:HexKeepUI.CleanEditMode()
 endfunction
 
 function! s:HexKeepUI.Stop()
@@ -17,6 +24,7 @@ function! s:HexKeepUI.CreateNewFile()
 endfunction
 
 function! s:HexKeepUI.OnCursorMoved()
+    echom "HexKeepUI.OnCursorMoved()"
 endfunction
 
 function! s:HexKeepUI.OnCursorMovedI()
@@ -41,4 +49,10 @@ function! s:HexKeepUI.OnBufWritePost()
 endfunction
 
 function! s:HexKeepUI.BuildInCommand(cmd)
+endfunction
+
+function! s:HexKeepUI.EnterEditMode()
+endfunction
+
+function! s:HexKeepUI.QuitEditMode()
 endfunction

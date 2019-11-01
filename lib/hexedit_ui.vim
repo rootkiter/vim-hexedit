@@ -21,14 +21,21 @@ function! s:HexEditUI.hookUninstall()
     for key in l:cmdkeys
         exec "nunmap ".key
     endfor
-    echom "hookUninstall"
+endfunction
+
+function! s:HexEditUI.EnterEditMode()
+    call s:HexEditUI.hookInstall()
+endfunction
+
+function! s:HexEditUI.QuitEditMode()
+    call s:HexEditUI.hookUninstall()
 endfunction
 
 function! s:HexEditUI.StartUp()
     let b:hexEditMode      = 1
     call s:HexEditUI.InitVars()
     call s:HexEditUI.convert2Hex()
-    call s:HexEditUI.hookInstall()
+    call s:HexEditUI.EnterEditMode()
 endfunction
 
 function! s:HexEditUI.InitVars()
@@ -51,7 +58,7 @@ function! s:HexEditUI.Stop()
     let &l:ft = b:oldft
     let b:hexEditMode = 0
     silent exe "%!xxd -r ".g:hexmode_xxd_options
-    call s:HexEditUI.hookUninstall()
+    call s:HexEditUI.QuitEditMode()
 endfunction
 
 function! s:HexEditUI.CreateNewFile()
@@ -88,18 +95,22 @@ endfunction
 function! s:HexEditUI.columnType(colnum)
     let l:hex_end_off = s:current_line_number_size+s:current_line_hex_area_size+2
     if a:colnum<=s:current_line_number_size+1
-        return ["addr", 'space', 1, s:current_line_number_size+1, 0, s:current_line_number_size+2]
+        return ["addr", 'space', 1, s:current_line_number_size+1, 0,
+                    \ s:current_line_number_size+2]
     elseif a:colnum <= l:hex_end_off-1
         let l:lv2 = 'data'
         let l:hex_off = a:colnum-s:current_line_number_size-2
         if l:hex_off % s:group_cell_size == 0
             let l:lv2 = 'space'
         endif
-        return ['hex',l:lv2, s:current_line_number_size+2, l:hex_end_off-1, s:current_line_number_size+1, l:hex_end_off+4]
+        return ['hex', l:lv2, s:current_line_number_size+2, l:hex_end_off-1,
+                    \ s:current_line_number_size+1, l:hex_end_off+4]
     elseif a:colnum < l:hex_end_off+4
-        return ['hex-sepa', 'space', l:hex_end_off, l:hex_end_off+3, l:hex_end_off-1, l:hex_end_off+4]
+        return ['hex-sepa', 'space', l:hex_end_off, l:hex_end_off+3,
+                    \ l:hex_end_off-1, l:hex_end_off+4]
     elseif a:colnum < l:hex_end_off+4+s:current_line_char_area_size
-        return ['char', 'data', l:hex_end_off+4, l:hex_end_off+g:octets_per_line+3, l:hex_end_off-1, 0]
+        return ['char', 'data', l:hex_end_off+4, l:hex_end_off+g:octets_per_line+3,
+                    \ l:hex_end_off-1, 0]
     else
         return ['limit', 'space', 0, 0, s:current_line_max_size, l:hex_end_off+4]
     endif
@@ -294,12 +305,6 @@ function! s:HexEditUI.allocNewLineAtTail(baseOffset)
     return l:curline
 endfunction
 
-function! s:HexEditUI.BuildInCommand(cmd)
-endfunction
-
-function! s:HexEditUI.OnBufReadPost()
-endfunction
-
 function! s:HexEditUI.OnInsertCharPre()
     let b:current_char = v:char
     let v:char = ''
@@ -312,6 +317,12 @@ function! s:HexEditUI.OnInsertCharPre()
 endfunction
 
 function! s:HexEditUI.OnBufUnload()
+endfunction
+
+function! s:HexEditUI.BuildInCommand(cmd)
+endfunction
+
+function! s:HexEditUI.OnBufReadPost()
 endfunction
 
 function! s:HexEditUI.OnBufWritePre()
