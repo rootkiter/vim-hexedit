@@ -15,14 +15,21 @@ endfunction
 
 function! hexedit#HexEditInitEnv()
     let b:HexEditCurrentUI = {}
+endfunction
 
+function! hexedit#testCurrentUI()
+    if !exists("b:HexEditCurrentUI")
+        let b:HexEditCurrentUI = {}
+    endif
+    if b:HexEditCurrentUI != {}
+        return 1
+    endif
+    return 0
 endfunction
 
 function! hexedit#toggle(new_ui)
     let l:curr_mode = ''
-    if !exists("b:HexEditCurrentUI")
-        let b:HexEditCurrentUI = {}
-    endif
+    call hexedit#testCurrentUI()
 
     if b:HexEditCurrentUI != {}
         let l:curr_mode = b:HexEditCurrentUI.Name()
@@ -36,9 +43,9 @@ function! hexedit#toggle(new_ui)
     endif
 endfunction
 
-function! hexedit#BuildInCommand(cmd)
-    if b:HexEditCurrentUI != {}
-        b:HexEditCurrentUI.BuildInCommand(a:cmd)
+function! hexedit#BuildInCommand(cmd, arg1)
+    if hexedit#testCurrentUI() == 1
+        call b:HexEditCurrentUI.BuildInCommand(a:cmd, a:arg1)
     endif
 endfunction
 
@@ -73,61 +80,55 @@ function! hexedit#OnBufReadPost()
 endfunction
 
 function! hexedit#OnTextChanged()
-    if b:HexEditCurrentUI != {}
+    if hexedit#testCurrentUI() == 1
         call b:HexEditCurrentUI.OnTextChanged()
     endif
 endfunction
 
 function! hexedit#OnCursorMoved()
-    if b:HexEditCurrentUI != {}
+    if hexedit#testCurrentUI() == 1
         call b:HexEditCurrentUI.OnCursorMoved()
     endif
 endfunction
 
 function! hexedit#OnCursorMovedI()
-    if b:HexEditCurrentUI != {}
+    if hexedit#testCurrentUI() == 1
         call b:HexEditCurrentUI.OnCursorMovedI()
     endif
 endfunction
 
 function! hexedit#OnInsertCharPre()
-    if b:HexEditCurrentUI != {}
+    if hexedit#testCurrentUI() == 1
         call b:HexEditCurrentUI.OnInsertCharPre()
     endif
 endfunction
 
 function! hexedit#OnBufWritePost()
-    if b:HexEditCurrentUI != {}
+    if hexedit#testCurrentUI() == 1
         call b:HexEditCurrentUI.OnBufWritePost()
     endif
 endfunction
 
 function! hexedit#OnBufUnload()
-    if b:HexEditCurrentUI != {}
+    if hexedit#testCurrentUI() == 1
         call b:HexEditCurrentUI.OnBufUnload()
     endif
 endfunction
 
 function! hexedit#OnBufWritePre()
-    if b:HexEditCurrentUI != {}
+    if hexedit#testCurrentUI() == 1
         call b:HexEditCurrentUI.OnBufWritePre()
     endif
 endfunction
 
 function! hexedit#OnBufLeave()
-    if !exists("b:HexEditCurrentUI")
-        let b:HexEditCurrentUI = {}
-    endif
-    if b:HexEditCurrentUI != {}
+    if hexedit#testCurrentUI() == 1
         call b:HexEditCurrentUI.QuitEditMode()
     endif
 endfunction
 
 function! hexedit#OnBufEnter()
-    if !exists("b:HexEditCurrentUI")
-        let b:HexEditCurrentUI = {}
-    endif
-    if b:HexEditCurrentUI != {}
+    if hexedit#testCurrentUI() == 1
         call b:HexEditCurrentUI.EnterEditMode()
     endif
 endfunction

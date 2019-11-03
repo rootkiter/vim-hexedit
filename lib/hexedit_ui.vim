@@ -39,17 +39,11 @@ function! s:HexEditUI.StartUp()
 endfunction
 
 function! s:HexEditUI.InitVars()
-    let l:group_num  = g:octets_per_line / g:group_octets_num
-    let l:group_left = g:octets_per_line % g:group_octets_num
-    let s:group_cell_size  = g:group_octets_num*2+1
-    let l:group_left_size  = l:group_left * 2 + (l:group_left>0?1:0)
-    let s:hex_area_size    = s:group_cell_size*l:group_num + l:group_left_size
-    let s:offset_area_size = 8
 endfunction
 
 function! s:HexEditUI.convert2Hex()
     silent exe "%!xxd ". g:hexmode_xxd_options
-                \ . "| sed 's/:\\(.\\{".s:hex_area_size."\\}\\)  /:\\1  | /g'"
+                \ . "| sed 's/:\\(.\\{".b:hex_area_size."\\}\\)  /:\\1  | /g'"
     let b:oldft = &l:ft
     let &l:ft   = 'xxd'
 endfunction
@@ -65,8 +59,8 @@ function! s:HexEditUI.CreateNewFile()
     let b:hexEditMode      = 1
     call s:HexEditUI.InitVars()
     let l:curline = s:HexEditUI.allocNewLineAtTail(0)
-    " let l:lineFmt = "%0".s:offset_area_size."x: 00%".
-    "             \(s:hex_area_size-3)."s  | ."
+    " let l:lineFmt = "%0".b:offset_area_size."x: 00%".
+    "             \(b:hex_area_size-3)."s  | ."
     " let l:curline = printf(l:lineFmt, 0, " ")
     call setline(1, l:curline)
     let b:oldft = &l:ft
@@ -81,7 +75,7 @@ function! s:HexEditUI.UpdateCurrentLine(cur_line)
     let l:current_line = getline(a:cur_line)
     let l:clinelist = matchlist(l:current_line,
                 \ '^\([a-fA-F0-9]*\):\([ a-fA-F0-9]\{0,'.
-                \ s:hex_area_size.'}\)  | \(.*\)$')[1:3]
+                \ b:hex_area_size.'}\)  | \(.*\)$')[1:3]
     if len(l:clinelist)!=3
         return
     endif
@@ -100,7 +94,7 @@ function! s:HexEditUI.columnType(colnum)
     elseif a:colnum <= l:hex_end_off-1
         let l:lv2 = 'data'
         let l:hex_off = a:colnum-s:current_line_number_size-2
-        if l:hex_off % s:group_cell_size == 0
+        if l:hex_off % b:group_cell_size == 0
             let l:lv2 = 'space'
         endif
         return ['hex', l:lv2, s:current_line_number_size+2, l:hex_end_off-1,
@@ -155,8 +149,8 @@ endfunction
 function! s:HexEditUI.ByteOffCalc(area, colnum)
     if a:area == 'hex'
         let l:hex_off = a:colnum-s:current_line_number_size-2
-        let l:group_id   = l:hex_off / s:group_cell_size
-        let l:group_left = (l:hex_off % s:group_cell_size - 1)/2
+        let l:group_id   = l:hex_off / b:group_cell_size
+        let l:group_left = (l:hex_off % b:group_cell_size - 1)/2
         ""let l:group_left_off = l:group_left % 2
 
         let l:bt_off = l:group_id * g:group_octets_num + l:group_left
@@ -173,7 +167,7 @@ function! s:HexEditUI.lineUpdate(curline, area, bt_off)
     let l:group_id   = a:bt_off / g:group_octets_num
     let l:group_left = a:bt_off % g:group_octets_num
     let l:hex_off    = s:current_line_number_size + 2 +
-                \(l:group_id * s:group_cell_size) +
+                \(l:group_id * b:group_cell_size) +
                 \1 +l:group_left*2
     let l:char_off   = s:current_line_number_size + 2 +
                 \s:current_line_hex_area_size + 2 + a:bt_off
@@ -299,8 +293,8 @@ function! s:HexEditUI.OnCursorMovedI()
 endfunction
 
 function! s:HexEditUI.allocNewLineAtTail(baseOffset)
-    let l:lineFmt = "%0".s:offset_area_size."x: 00%".
-                \(s:hex_area_size-3)."s  | ."
+    let l:lineFmt = "%0".b:offset_area_size."x: 00%".
+                \(b:hex_area_size-3)."s  | ."
     let l:curline = printf(l:lineFmt, 0+a:baseOffset, " ")
     return l:curline
 endfunction
@@ -319,7 +313,32 @@ endfunction
 function! s:HexEditUI.OnBufUnload()
 endfunction
 
-function! s:HexEditUI.BuildInCommand(cmd)
+function! s:HexEditUI.BuildInCommand(cmd, arg1)
+    let l:lines = getline(1, line('$'))
+    if len(a:arg1)%2 !=0
+        echom "Please use legal hex sequence."
+        return
+    endif
+    let l:fmt = "\\(\\x\\{".b:offset_area_size.
+                \ "}\\):\\(.\\{".b:hex_area_size.
+                \ "}\\)  | \\(.*\\)"
+    let l:split_fmt  = " \\(\\x\\{2}\\)\\(\\x\\{2}\\)"
+    let l:split_tfmt = " \\1 \\2"
+    let l:hex_area = ""
+    for l:line in l:lines
+        let l:res = matchlist(l:line, l:fmt)
+        let l:tmp1 = substitute(l:res[2],
+                    \l:split_fmt, l:split_tfmt, 'g')
+        let l:tmp1 = substitute(l:tmp1,
+                    \l:split_fmt, l:split_tfmt, 'g')
+        let l:hex_area .= l:tmp1
+    endfor
+    let l:split_patt = '\\(\\x\\{2}\\)\\(\\x\\{2}\\)'
+    let l:split_patt_to = "\\1 \\2"
+    let l:patt = substitute(a:arg1,
+                \ l:split_patt, l:split_patt_to, 'g')
+    let l:patt = substitute(l:patt,
+                \ l:split_patt, l:split_patt_to, 'g')
 endfunction
 
 function! s:HexEditUI.OnBufReadPost()

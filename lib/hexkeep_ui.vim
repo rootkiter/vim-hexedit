@@ -8,9 +8,11 @@ function! s:HexKeepUI.Name()
 endfunction
 
 function! s:HexKeepUI.StartUp()
-    let l:fmt = "%s/\\(\\x\\{8}\\):\\(.\\{40}\\)  | \\(.*\\)/\\2/g"
+    let l:fmt = "%s/\\(\\x\\{".b:offset_area_size.
+                \ "}\\):\\(.\\{".b:hex_area_size."}\\)  | \\(.*\\n\\)/\\2/g"
     silent exec l:fmt
     let l:hex_split = "%s/ \\(\\x\\{2}\\)\\(\\x\\{2}\\)/ \\1 \\2/g"
+    silent exec l:hex_split
     silent exec l:hex_split
 endfunction
 
