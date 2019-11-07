@@ -27,6 +27,7 @@ call hexedit#loadClassFiles()
 command -bar Hexedit call hexedit#ToggleHexEdit()
 command -bar Hexkeep call hexedit#ToggleHexKeep()
 command -bar -nargs=1 Hexsearch call hexedit#BuildInCommand("Hexsearch", <q-args>)
+command -bar -nargs=0 HexsearchClean call hexedit#BuildInCommand("HexsearchClean", <q-args>)
 
 if has("autocmd")
     augroup Hexedit

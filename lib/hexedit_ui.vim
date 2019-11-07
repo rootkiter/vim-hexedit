@@ -10,14 +10,14 @@ function! s:HexEditUI.Name()
 endfunction
 
 function! s:HexEditUI.hookInstall()
-    let l:cmdkeys = ['b','h']
+    let l:cmdkeys = ['n', 'b', 'h']
     for key in l:cmdkeys
         exec "nnoremap <silent> ".key." :call g:HexEditUI.NormalKeyMap(\"".key."\") <CR>"
     endfor
 endfunction
 
 function! s:HexEditUI.hookUninstall()
-    let l:cmdkeys = ['b', 'h']
+    let l:cmdkeys = ['n', 'b', 'h']
     for key in l:cmdkeys
         exec "nunmap ".key
     endfor
@@ -39,6 +39,8 @@ function! s:HexEditUI.StartUp()
 endfunction
 
 function! s:HexEditUI.InitVars()
+    let s:cursearchoff = 0
+    let s:cursearchpattern = ""
 endfunction
 
 function! s:HexEditUI.convert2Hex()
@@ -114,7 +116,13 @@ function! s:HexEditUI.NormalKeyMap(key)
     let [l:cur_line, l:cur_col] = getpos('.')[1:2]
     let [l:area, l:lv2, l:cmin, l:cmax, l:bmax, l:nmin] =
                 \ s:HexEditUI.columnType(l:cur_col-1)
-    if l:area == 'hex' && l:lv2 == 'space' && a:key == 'h'
+    if a:key == 'n'
+        if len(s:cursearchpattern) > 0
+            call s:HexEditUI.hexSearchNext()
+        else
+            exec "normal! ".a:key
+        endif
+    elseif l:area == 'hex' && l:lv2 == 'space' && a:key == 'h'
         call cursor(l:cur_line, l:cur_col-2)
     elseif l:area == 'hex-sepa'
         call cursor(l:cur_line, l:bmax)
@@ -314,11 +322,29 @@ function! s:HexEditUI.OnBufUnload()
 endfunction
 
 function! s:HexEditUI.BuildInCommand(cmd, arg1)
-    let l:lines = getline(1, line('$'))
-    if len(a:arg1)%2 !=0
-        echom "Please use legal hex sequence."
-        return
+    if a:cmd == 'Hexsearch'
+        let l:lines = getline(1, line('$'))
+        if len(a:arg1)%2 !=0
+            echom "Please use legal hex sequence."
+            return
+        endif
+        let l:split_patt = "\\(\\x\\{2}\\)\\(\\x\\{2}\\)"
+        let l:split_patt_to = "\\1 \\2"
+        let l:patt = substitute(a:arg1,
+                    \ l:split_patt, l:split_patt_to, 'g')
+        let l:patt = substitute(l:patt,
+                    \ l:split_patt, l:split_patt_to, 'g')
+        let s:cursearchpattern = l:patt
+        let s:cursearchoff = 0
+        call s:HexEditUI.hexSearchNext()
+    elseif a:cmd == 'HexsearchClean'
+        let s:cursearchpattern = ''
+        let s:cursearchoff = 0
     endif
+endfunction
+
+function! s:HexEditUI.hexSearchNext()
+    let l:lines = getline(1, line('$'))
     let l:fmt = "\\(\\x\\{".b:offset_area_size.
                 \ "}\\):\\(.\\{".b:hex_area_size.
                 \ "}\\)  | \\(.*\\)"
@@ -333,12 +359,19 @@ function! s:HexEditUI.BuildInCommand(cmd, arg1)
                     \l:split_fmt, l:split_tfmt, 'g')
         let l:hex_area .= l:tmp1
     endfor
-    let l:split_patt = '\\(\\x\\{2}\\)\\(\\x\\{2}\\)'
-    let l:split_patt_to = "\\1 \\2"
-    let l:patt = substitute(a:arg1,
-                \ l:split_patt, l:split_patt_to, 'g')
-    let l:patt = substitute(l:patt,
-                \ l:split_patt, l:split_patt_to, 'g')
+    let l:offset = match(l:hex_area, s:cursearchpattern,
+                \s:cursearchoff)
+    let s:cursearchoff = l:offset + 2
+    let l:tt_off = ((l:offset-1)/3)
+
+    let l:line_num = l:tt_off / g:octets_per_line + 1
+    let l:bt_off   = l:tt_off % g:octets_per_line
+    let l:group    = l:bt_off / g:group_octets_num
+    let l:left     = l:bt_off % g:group_octets_num
+
+    let l:col_off  = s:current_line_number_size + 3 +
+                \ l:group * b:group_cell_size + l:left*2
+    call cursor(l:line_num, l:col_off)
 endfunction
 
 function! s:HexEditUI.OnBufReadPost()
