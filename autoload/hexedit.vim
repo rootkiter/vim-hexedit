@@ -57,13 +57,16 @@ function! hexedit#ToggleHexKeep()
     if b:HexEditCurrentUI == {}
         echom "CurrentUI == None"
         return
-    elseif b:HexEditCurrentUI.Name() != "HexEditUI"
-        echom "HexKeep"
-        return
-   endif
-   call g:HexEditUI.QuitEditMode()
-   let b:HexEditCurrentUI = g:HexKeepUI
-   call b:HexEditCurrentUI.StartUp()
+    elseif b:HexEditCurrentUI.Name() == "HexEditUI"
+        call g:HexEditUI.QuitEditMode()
+        let b:HexEditCurrentUI = g:HexKeepUI
+        call b:HexEditCurrentUI.StartUp()
+    elseif b:HexEditCurrentUI.Name() == "HexKeepUI"
+        call g:HexKeepUI.FillHexAuxiliaryInfo()
+        call g:HexKeepUI.QuitEditMode()
+        call g:HexEditUI.EnterEditMode()
+        let b:HexEditCurrentUI = g:HexEditUI
+    endif
 endfunction
 
 function! hexedit#OnBufNewFile()
