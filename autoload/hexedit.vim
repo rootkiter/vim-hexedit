@@ -11,10 +11,11 @@ endfunction
 function! hexedit#loadClassFiles()
     runtime lib/hexedit_ui.vim
     runtime lib/hexkeep_ui.vim
+    runtime lib/hex2c_ui.vim
 endfunction
 
 function! hexedit#HexEditInitEnv()
-    let b:HexEditCurrentUI = {}
+    " let b:HexEditCurrentUI = {}
 endfunction
 
 function! hexedit#testCurrentUI()
@@ -64,6 +65,22 @@ function! hexedit#ToggleHexKeep()
     elseif b:HexEditCurrentUI.Name() == "HexKeepUI"
         call g:HexKeepUI.FillHexAuxiliaryInfo()
         call g:HexKeepUI.QuitEditMode()
+        call g:HexEditUI.EnterEditMode()
+        let b:HexEditCurrentUI = g:HexEditUI
+    endif
+endfunction
+
+function! hexedit#ToggleHex2C()
+    if b:HexEditCurrentUI == {}
+        echom "CurrentUI == None"
+        return
+    elseif b:HexEditCurrentUI.Name() == "HexEditUI"
+        call g:HexEditUI.QuitEditMode()
+        let b:HexEditCurrentUI = g:Hex2CUI
+        call b:HexEditCurrentUI.StartUp()
+    elseif b:HexEditCurrentUI.Name() == "Hex2CUI"
+        call g:Hex2CUI.FillHexAuxiliaryInfo()
+        call g:Hex2CUI.QuitEditMode()
         call g:HexEditUI.EnterEditMode()
         let b:HexEditCurrentUI = g:HexEditUI
     endif

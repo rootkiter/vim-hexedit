@@ -308,6 +308,7 @@ function! s:HexEditUI.allocNewLineAtTail(baseOffset)
 endfunction
 
 function! s:HexEditUI.OnInsertCharPre()
+    echom "OnInsertCharPre()".v:char
     let b:current_char = v:char
     let v:char = ''
     let [l:cur_line, l:cur_col] = getpos('.')[1:2]

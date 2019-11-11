@@ -17,7 +17,8 @@ let b:m_group_num  = g:octets_per_line / g:group_octets_num
 let b:m_group_left = g:octets_per_line % g:group_octets_num
 let b:group_cell_size  = g:group_octets_num*2+1
 let b:group_left_size  = b:m_group_left * 2 + (b:m_group_left>0?1:0)
-let b:hex_area_size    = b:group_cell_size*b:m_group_num + b:group_left_size
+let b:hex_area_size    = b:group_cell_size*b:m_group_num +
+            \ b:group_left_size
 let b:offset_area_size = 8
 
 
@@ -26,6 +27,7 @@ call hexedit#loadClassFiles()
 
 command -bar Hexedit call hexedit#ToggleHexEdit()
 command -bar Hexkeep call hexedit#ToggleHexKeep()
+command -bar Hex2C   call hexedit#ToggleHex2C  ()
 command -bar -nargs=1 Hexsearch call hexedit#BuildInCommand("Hexsearch", <q-args>)
 command -bar -nargs=0 HexsearchClean call hexedit#BuildInCommand("HexsearchClean", <q-args>)
 
