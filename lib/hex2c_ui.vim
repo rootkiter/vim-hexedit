@@ -16,7 +16,10 @@ function! s:Hex2CUI.StartUp()
     let l:cut_char_area_to = "\\3"
 
     let l:hex_split_frm = " \\(\\x\\{2}\\)\\(\\x\\{2}\\)"
-    let l:hex_split_to  = "0x\\1, 0x\\2, "
+    let l:hex_split_to  = " \\1 \\2"
+
+    let l:hex_to_C_frm  = " \\(\\x\\{2}\\)"
+    let l:hex_to_C_to   = "0x\\1, "
 
     while l:line_cur <= line('$')
         let l:cur_line = getline( l:line_cur )
@@ -26,9 +29,13 @@ function! s:Hex2CUI.StartUp()
                     \ l:hex_split_frm, l:hex_split_to, 'g')
         let l:cur_hex_area = substitute(l:cur_hex_area,
                     \ l:hex_split_frm, l:hex_split_to, 'g')
+        let l:cur_hex_area = substitute(l:cur_hex_area,
+                    \ l:hex_to_C_frm, l:hex_to_C_to, 'g')
+
         let l:cur_char_area = substitute(l:cur_line,
                     \ l:cut_hex_frm, l:cut_char_area_to, 'g')
 
+        echom l:cur_hex_area
         let l:line_output = l:cur_hex_area." // ".l:cur_char_area
 
         call setline(l:line_cur, l:line_output)
