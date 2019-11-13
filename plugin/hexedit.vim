@@ -5,21 +5,22 @@ let loaded_plugin_hexedit = 1
 
 let g:group_octets_num = get(g:, 'group_octets_num', 2)
 let g:octets_per_line  = get(g:, 'octets_per_line' , 16)
-let g:hexmode_low_up   = get(g:, 'hexmode_lower_upper', ' -u ')
+let g:hexedit_low_up   = get(g:, 'hexedit_low_up'  , 'lower')
+let g:hexedit_patterns = get(g:, 'hexedit_patterns', '*.bin,*.dat,*.o')
 
-let g:hexmode_xxd_options = get(g:, 'hexmode_xxd_options', '')
-let g:hexmode_xxd_options = g:hexmode_xxd_options.
+let g:hexedit_xxd_options = get(g:, 'hexedit_xxd_options', '')
+let g:hexedit_xxd_options = g:hexedit_xxd_options.
             \ ' -c '.g:octets_per_line.
             \ ' -g '.g:group_octets_num
 
 
 let b:m_group_num  = g:octets_per_line / g:group_octets_num
 let b:m_group_left = g:octets_per_line % g:group_octets_num
-let b:group_cell_size  = g:group_octets_num*2+1
+let g:group_cell_size  = g:group_octets_num*2+1
 let b:group_left_size  = b:m_group_left * 2 + (b:m_group_left>0?1:0)
-let b:hex_area_size    = b:group_cell_size*b:m_group_num +
+let g:hex_area_size    = g:group_cell_size*b:m_group_num +
             \ b:group_left_size
-let b:offset_area_size = 8
+let g:offset_area_size = 8
 
 
 call hexedit#HexEditInitEnv()
@@ -35,6 +36,12 @@ command -bar -nargs=0 HexsearchClean call hexedit#BuildInCommand("HexsearchClean
 if has("autocmd")
     augroup Hexedit
         au!
+
+        if !empty(g:hexedit_patterns)
+            execute printf('au BufReadPre %s setlocal binary', g:hexedit_patterns)
+        endif
+
+
         au BufNewFile    * call hexedit#OnBufNewFile()   
 
         au BufReadPost   * call hexedit#OnBufReadPost()

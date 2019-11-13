@@ -14,12 +14,16 @@ function! s:HexEditUI.hookInstall()
     for key in l:cmdkeys
         exec "nnoremap <silent> ".key." :call g:HexEditUI.NormalKeyMap(\"".key."\") <CR>"
     endfor
+    let b:hooked = 1
 endfunction
 
 function! s:HexEditUI.hookUninstall()
+    if !exists("b:hooked") || b:hooked != 1
+        return
+    endif
     let l:cmdkeys = ['n', 'b', 'h']
     for key in l:cmdkeys
-        exec "nunmap ".key
+        " exec "nunmap ".key
     endfor
 endfunction
 
@@ -33,6 +37,9 @@ endfunction
 
 function! s:HexEditUI.StartUp()
     let b:hexEditMode      = 1
+    let b:hex_area_size    = g:hex_area_size
+    let b:offset_area_size = g:offset_area_size
+    let b:group_cell_size  = g:group_cell_size
     call s:HexEditUI.InitVars()
     call s:HexEditUI.convert2Hex()
     call s:HexEditUI.EnterEditMode()
@@ -44,8 +51,8 @@ function! s:HexEditUI.InitVars()
 endfunction
 
 function! s:HexEditUI.convert2Hex()
-    silent exe "%!xxd ". g:hexmode_xxd_options
-                \ . "| sed 's/:\\(.\\{".b:hex_area_size."\\}\\)  /:\\1  | /g'"
+    silent exe "%!xxd ". g:hexedit_xxd_options
+                \ . "| sed 's/:\\(.\\{".g:hex_area_size."\\}\\)  /:\\1  | /g'"
     let b:oldft = &l:ft
     let &l:ft   = 'xxd'
 endfunction
@@ -53,7 +60,7 @@ endfunction
 function! s:HexEditUI.Stop()
     let &l:ft = b:oldft
     let b:hexEditMode = 0
-    silent exe "%!xxd -r ".g:hexmode_xxd_options
+    silent exe "%!xxd -r ".g:hexedit_xxd_options
     call s:HexEditUI.QuitEditMode()
 endfunction
 
@@ -61,9 +68,6 @@ function! s:HexEditUI.CreateNewFile()
     let b:hexEditMode      = 1
     call s:HexEditUI.InitVars()
     let l:curline = s:HexEditUI.allocNewLineAtTail(0)
-    " let l:lineFmt = "%0".b:offset_area_size."x: 00%".
-    "             \(b:hex_area_size-3)."s  | ."
-    " let l:curline = printf(l:lineFmt, 0, " ")
     call setline(1, l:curline)
     let b:oldft = &l:ft
     let &l:ft   = 'xxd'
@@ -77,7 +81,7 @@ function! s:HexEditUI.UpdateCurrentLine(cur_line)
     let l:current_line = getline(a:cur_line)
     let l:clinelist = matchlist(l:current_line,
                 \ '^\([a-fA-F0-9]*\):\([ a-fA-F0-9]\{0,'.
-                \ b:hex_area_size.'}\)  | \(.*\)$')[1:3]
+                \ g:hex_area_size.'}\)  | \(.*\)$')[1:3]
     if len(l:clinelist)!=3
         return
     endif
@@ -380,7 +384,7 @@ endfunction
 
 function! s:HexEditUI.OnBufWritePre()
     if b:hexEditMode == 1
-        silent exe "%!xxd -r ".g:hexmode_xxd_options
+        silent exe "%!xxd -r ".g:hexedit_xxd_options
     endif
 endfunction
 
