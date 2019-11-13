@@ -34,7 +34,7 @@ function! s:Hex2PyUI.StartUp()
         if l:line_cur != line('$')
             let l:line_output .= "\" + ### ".l:cur_char_area
         else
-            let l:line_output .= " \" ### ".l:cur_char_area
+            let l:line_output .= "\"   ### ".l:cur_char_area
         endif
 
         call setline(l:line_cur, l:last_tmp_line)
@@ -47,10 +47,10 @@ endfunction
 
 function! s:Hex2PyUI.FillHexAuxiliaryInfo()
     let l:cut_hex_frm     = "  \\\"\\(.*\\)\\\" + ### \\(.*\\)"
-    let l:cut_hex_end_frm = "  \\\"\\(.*\\)\\\" ### \\(.*\\)"
+    let l:cut_hex_end_frm = "  \\\"\\(.*\\)\\\"   ### \\(.*\\)"
 
     let l:newfmt = "%0".b:offset_area_size."x: ".
-                \"%-".b:hex_area_size."s  | %s"
+                \"%-".b:hex_area_size."s | %s"
 
     let l:line_cur = 2
     let l:offsetnow = 0
