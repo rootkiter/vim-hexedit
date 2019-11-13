@@ -35,7 +35,6 @@ function! s:Hex2CUI.StartUp()
         let l:cur_char_area = substitute(l:cur_line,
                     \ l:cut_hex_frm, l:cut_char_area_to, 'g')
 
-        echom l:cur_hex_area
         let l:line_output = l:cur_hex_area." // ".l:cur_char_area
 
         call setline(l:line_cur, l:line_output)
