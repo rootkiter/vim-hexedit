@@ -115,6 +115,10 @@ endfunction
 function! s:Hex2CUI.OnCursorMovedI()
 endfunction
 
+function! s:Hex2CUI.OnInsertEnter()
+    call feedkeys("\<esc>")
+endfunction
+
 function! s:Hex2CUI.OnTextChanged()
 endfunction
 

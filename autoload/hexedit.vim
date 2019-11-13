@@ -11,6 +11,7 @@ endfunction
 function! hexedit#loadClassFiles()
     runtime lib/hexedit_ui.vim
     runtime lib/hexkeep_ui.vim
+    runtime lib/hex2py_ui.vim
     runtime lib/hex2c_ui.vim
 endfunction
 
@@ -63,10 +64,14 @@ function! hexedit#ToggleHexKeep()
         let b:HexEditCurrentUI = g:HexKeepUI
         call b:HexEditCurrentUI.StartUp()
     elseif b:HexEditCurrentUI.Name() == "HexKeepUI"
-        call g:HexKeepUI.FillHexAuxiliaryInfo()
-        call g:HexKeepUI.QuitEditMode()
-        call g:HexEditUI.EnterEditMode()
-        let b:HexEditCurrentUI = g:HexEditUI
+        let l:flag = g:HexKeepUI.FillHexAuxiliaryInfo()
+        if l:flag == 1
+            call g:HexKeepUI.QuitEditMode()
+            call g:HexEditUI.EnterEditMode()
+            let b:HexEditCurrentUI = g:HexEditUI
+        else
+            echom "The content of Hex is wrong. Please check it and try again."
+        endif
     endif
 endfunction
 
@@ -86,6 +91,22 @@ function! hexedit#ToggleHex2C()
     endif
 endfunction
 
+function! hexedit#ToggleHex2Py()
+    if b:HexEditCurrentUI == {}
+        echom "CurrentUI == None"
+        return
+    elseif b:HexEditCurrentUI.Name() == "HexEditUI"
+        call g:HexEditUI.QuitEditMode()
+        let b:HexEditCurrentUI = g:Hex2PyUI
+        call b:HexEditCurrentUI.StartUp()
+    elseif b:HexEditCurrentUI.Name() == "Hex2PyUI"
+        call g:Hex2PyUI.FillHexAuxiliaryInfo()
+        call g:Hex2PyUI.QuitEditMode()
+        call g:HexEditUI.EnterEditMode()
+        let b:HexEditCurrentUI = g:HexEditUI
+    endif
+endfunction
+
 function! hexedit#OnBufNewFile()
     if &l:binary == 1
         call g:HexEditUI.CreateNewFile()
@@ -96,6 +117,12 @@ endfunction
 function! hexedit#OnBufReadPost()
     if &l:binary == 1
         call hexedit#ToggleHexEdit()
+    endif
+endfunction
+
+function! hexedit#OnInsertEnter()
+    if hexedit#testCurrentUI() == 1
+        call b:HexEditCurrentUI.OnInsertEnter()
     endif
 endfunction
 

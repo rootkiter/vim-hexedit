@@ -35,61 +35,67 @@ function! s:HexKeepUI.StartUp()
 endfunction
 
 function! s:HexKeepUI.FillHexAuxiliaryInfo()
-    let l:group_cell_frm = repeat(" \\(\\x\\{2}\\)",
-                \ g:group_octets_num)
-    let l:group_cell_to  = " ".join(map(range(1,
-                \ g:group_octets_num),
-                \ '"\\".v:val'), '')
+    let l:hex_areas_lines = getline(1, line('$'))
+    let l:hex_areas_bts   = join(split(join(l:hex_areas_lines, ''), ' '), '')
+    let l:hex_bts_len     = len(l:hex_areas_bts)
+    if l:hex_bts_len % 2 != 0
+        return 0
+    endif
+    let l:hex_area_split_frm = "\\(\\x\\{2}\\)\\(\\x\\{2}\\)"
+    let l:hex_area_split_to  = "\\1 \\2 "
+    let l:hex_areas_bts = substitute(
+                \ l:hex_areas_bts, l:hex_area_split_frm,
+                \ l:hex_area_split_to, 'g')
+    let l:hex_areas_bts = split(l:hex_areas_bts, " ")
 
     let l:newfmt = "%0".b:offset_area_size."x:".
                 \"%-".b:hex_area_size."s  | %s"
 
-    let l:l_num = 1
-    let l:offsetnow = 0
-    while l:l_num <= line('$')
-        let l:line = getline(l:l_num)
-        let l:line = substitute(l:line,
-                    \"  *", " ", 'g')
-        let l:tmp = substitute(l:line,
-                    \ l:group_cell_frm, l:group_cell_to,
-                    \ 'g')
-
-        let l:bts_list = split(l:line, " ")
-        let l:left_bts = len(l:bts_list)
-                    \ % g:group_octets_num
-        if l:left_bts > 0
-            let l:group_left_frm = repeat(
-                        \ " \\(\\x\\{2}\\)",
-                        \ l:left_bts)
-            let l:group_left_to  = " ".join(
-                        \ map(range(1,
-                        \ l:left_bts),
-                        \ '"\\".v:val'), '')
-            let l:tmp = substitute(l:tmp,
-                        \ l:group_left_frm,
-                        \ l:group_left_to,
-                        \ 'g')
-        endif
-
-        let l:bts_char_str = ''
-        for l:charnow in map(l:bts_list, '"0x".v:val')
-            let l:ascii = eval(l:charnow)
-            if l:ascii < 127 && l:ascii > 31
-                let l:bts_char_str .= nr2char(l:ascii)
-            else
-                let l:bts_char_str .= "."
+    let l:line_number = 0
+    let l:line_bt_off = 0
+    let l:hex_tmp     = ""
+    let l:char_tmp    = ""
+    let l:offsetnow   = 0
+    for l:nid in range(0, len(l:hex_areas_bts)-1)
+        if l:nid % g:octets_per_line == 0
+            if l:line_number > 0
+                let l:cur_line = printf( l:newfmt,
+                            \ l:offsetnow, l:hex_tmp, l:char_tmp)
+                call setline(l:line_number, l:cur_line)
+                let l:offsetnow += g:octets_per_line
+                let l:hex_tmp = ""
+                let l:char_tmp = ""
+                let l:line_bt_off = 0
             endif
-        endfor
-        let l:newline = printf(
-                    \ l:newfmt,
-                    \ l:offsetnow, l:tmp, l:bts_char_str)
-        call setline(l:l_num, l:newline)
-        let l:l_num += 1
-        let l:offsetnow += g:octets_per_line
+            let l:line_number += 1
+        endif
+        let l:bt_hex = l:hex_areas_bts[l:nid]
+        if l:line_bt_off % g:group_octets_num == 0
+            let l:hex_tmp .= " "
+        endif
+        let l:hex_tmp  .= l:bt_hex
+        let l:ascii  = eval("0x".l:bt_hex)
+        if l:ascii < 127 && l:ascii > 31
+            let l:char_tmp .= nr2char(l:ascii)
+        else
+            let l:char_tmp .= "."
+        endif
+        let l:line_bt_off += 1
+    endfor
+    let l:cur_line = printf( l:newfmt,
+                \ l:offsetnow, l:hex_tmp, l:char_tmp)
+    call setline(l:line_number, l:cur_line)
+
+    while l:line_number < line('$')
+        exe "normal! Gdd"
     endwhile
+    return 1
 endfunction
 
 function! s:HexKeepUI.CleanEditMode()
+endfunction
+
+function! s:HexKeepUI.OnInsertEnter()
 endfunction
 
 function! s:HexKeepUI.Stop()

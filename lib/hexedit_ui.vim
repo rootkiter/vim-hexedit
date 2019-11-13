@@ -202,6 +202,9 @@ function! s:HexEditUI.lineUpdate(curline, area, bt_off)
     return l:curline
 endfunction
 
+function! s:HexEditUI.OnInsertEnter()
+endfunction
+
 function! s:HexEditUI.OnTextChanged()
     let [l:cur_line, l:cur_col] = getpos('.')[1:2]
     let [l:area, l:lv2, l:cmin, l:cmax, l:bmax, l:nmin] =
@@ -279,14 +282,12 @@ function! s:HexEditUI.OnCursorMovedI()
     elseif l:area == 'char'
         let l:bt_off = s:HexEditUI.ByteOffCalc('char', l:cur_col-1)
         let l:curr_line = getline('.')
-        " echom l:bt_off.":".g:octets_per_line.":".l:cur_col.":".s:current_line_max_size
         if l:bt_off < g:octets_per_line
             let l:curr_line = l:curr_line[0:l:cur_col-3].l:vchar.
                         \ l:curr_line[l:cur_col-1:]
             let l:curr_line = s:HexEditUI.lineUpdate(l:curr_line,
                         \ 'char', l:bt_off)
             call setline(l:cur_line, l:curr_line)
-            " echom l:bt_off.":".s:current_line_char_area_size
             if l:bt_off == g:octets_per_line - 1
                 if line("$") <= l:cur_line
                     let l:nextline = s:HexEditUI.allocNewLineAtTail(
@@ -308,7 +309,6 @@ function! s:HexEditUI.allocNewLineAtTail(baseOffset)
 endfunction
 
 function! s:HexEditUI.OnInsertCharPre()
-    echom "OnInsertCharPre()".v:char
     let b:current_char = v:char
     let v:char = ''
     let [l:cur_line, l:cur_col] = getpos('.')[1:2]
