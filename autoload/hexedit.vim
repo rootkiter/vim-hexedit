@@ -126,6 +126,12 @@ function! hexedit#OnInsertEnter()
     endif
 endfunction
 
+function! hexedit#OnInsertLeave()
+    if hexedit#testCurrentUI() == 1
+        call b:HexEditCurrentUI.OnInsertLeave()
+    endif
+endfunction
+
 function! hexedit#OnTextChanged()
     if hexedit#testCurrentUI() == 1
         call b:HexEditCurrentUI.OnTextChanged()

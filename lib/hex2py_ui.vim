@@ -118,6 +118,9 @@ function! s:Hex2PyUI.OnInsertEnter()
     call feedkeys("\<esc>")
 endfunction
 
+function! s:Hex2PyUI.OnInsertLeave()
+endfunction
+
 function! s:Hex2PyUI.OnTextChanged()
 endfunction
 

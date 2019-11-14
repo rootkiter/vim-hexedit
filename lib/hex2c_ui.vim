@@ -125,6 +125,9 @@ function! s:Hex2CUI.OnInsertEnter()
     call feedkeys("\<esc>")
 endfunction
 
+function! s:Hex2CUI.OnInsertLeave()
+endfunction
+
 function! s:Hex2CUI.OnTextChanged()
 endfunction
 

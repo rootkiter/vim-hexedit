@@ -33,6 +33,10 @@ command -bar Hex2Py  call hexedit#ToggleHex2Py ()
 command -bar -nargs=1 Hexsearch call hexedit#BuildInCommand("Hexsearch", <q-args>)
 command -bar -nargs=0 HexsearchClean call hexedit#BuildInCommand("HexsearchClean", <q-args>)
 
+function! s:Echom(message)
+	echom "Echom -> ".a:message
+endfunction
+
 if has("autocmd")
     augroup Hexedit
         au!
@@ -49,7 +53,9 @@ if has("autocmd")
         au CursorMovedI  * call hexedit#OnCursorMovedI()
 
         au InsertEnter   * call hexedit#OnInsertEnter()
+        au InsertLeave   * call hexedit#OnInsertLeave()
         au TextChanged   * call hexedit#OnTextChanged()
+        " au InsertLeave   * call s:Echom("InsertLeave")
 
         au BufUnload     * call hexedit#OnBufUnload()
         au BufEnter      * call hexedit#OnBufEnter()

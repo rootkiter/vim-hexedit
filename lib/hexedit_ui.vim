@@ -11,10 +11,15 @@ endfunction
 
 function! s:HexEditUI.hookInstall()
     let l:cmdkeys = ['n', 'b', 'h']
-    for key in l:cmdkeys
-        exec "nnoremap <silent> ".key." :call g:HexEditUI.NormalKeyMap(\"".key."\") <CR>"
-    endfor
-    let b:hooked = 1
+	if !exists("b:hooked")
+		let b:hooked = 0
+	endif
+    if b:hooked == 0
+        for key in l:cmdkeys
+            exec "nnoremap <silent> ".key." :call g:HexEditUI.NormalKeyMap(\"".key."\") <CR>"
+        endfor
+        let b:hooked = 1
+    endif
 endfunction
 
 function! s:HexEditUI.hookUninstall()
@@ -25,6 +30,7 @@ function! s:HexEditUI.hookUninstall()
     for key in l:cmdkeys
         " exec "nunmap ".key
     endfor
+    let b:hooked = 0
 endfunction
 
 function! s:HexEditUI.EnterEditMode()
@@ -207,6 +213,19 @@ function! s:HexEditUI.lineUpdate(curline, area, bt_off)
 endfunction
 
 function! s:HexEditUI.OnInsertEnter()
+    let b:hexedit_paste_flag = 0
+    if &paste == 1
+        let b:hexedit_paste_flag = 1
+        set nopaste
+        echom "hook -> ".b:hexedit_paste_flag.":".&paste
+    endif
+endfunction
+
+function! s:HexEditUI.OnInsertLeave()
+    if exists("b:hexedit_paste_flag") && b:hexedit_paste_flag == 1
+        let b:hexedit_paste_flag = 0
+        set paste
+    endif
 endfunction
 
 function! s:HexEditUI.OnTextChanged()

@@ -98,6 +98,9 @@ endfunction
 function! s:HexKeepUI.OnInsertEnter()
 endfunction
 
+function! s:HexKeepUI.OnInsertLeave()
+endfunction
+
 function! s:HexKeepUI.Stop()
 endfunction
 
