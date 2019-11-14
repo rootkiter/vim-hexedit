@@ -217,7 +217,6 @@ function! s:HexEditUI.OnInsertEnter()
     if &paste == 1
         let b:hexedit_paste_flag = 1
         set nopaste
-        echom "hook -> ".b:hexedit_paste_flag.":".&paste
     endif
 endfunction
 
