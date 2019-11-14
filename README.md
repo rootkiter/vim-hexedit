@@ -1,13 +1,12 @@
 # HexEdit
 
-HexEdit 是一个工作在VIM下的插件，用于强化 VIM 的 Hex 编辑能力。  
 该插件基于 xxd 实现，辅助修正字符区域/行号区域的更改和变化。  
 默认情况下 HexEdit 将把 [ \*.bin,\*.dat,\*.o ] 类型的文件视为二进制文件，并以 HexEdit 模式打开。   
-其次，也可以通过  vim -b 1.txt 的方式强制以 HexEdit 模式打开 1.txt 文件。   
+其次，也可以通过  vim -b 1.txt 的方式强制将 1.txt 文件视为二进制文件。
 
-由于用法比较简单，此处将先讲用法，再讲安装。
+由于插件用法相对简单，此处将先介绍用法，再介绍安装。
 
-# Hex 编辑  
+# 如何进行 Hex 编辑
 
 ## HexEdit 模式
 
@@ -66,9 +65,9 @@ HexEdit 是一个工作在VIM下的插件，用于强化 VIM 的 Hex 编辑能�
   0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x56, 0x69, 0x6d, 0x53, 0x63, 0x72, 0x69, 0x70, 0x74, 0x0a,  // Hello VimScript.  
 ```
 
-再次输入 `:Hex2C` 后，便可回到 HexEdit 模式。
-
 在该状态中无法进入插入模式，以免误操作。
+
+再次输入 `:Hex2C` 后，便可回到 HexEdit 模式。
 
 ## 以 Python格式 导出
 
@@ -84,15 +83,15 @@ HexEdit 是一个工作在VIM下的插件，用于强化 VIM 的 Hex 编辑能�
   ).replace(' ', '').decode('hex')
 ```
 
-再次输入 `:Hex2Py` 后，仍可回到 HexEdit 模式。
-
 在该状态中无法进入插入模式，以免误操作。
+
+再次输入 `:Hex2Py` 后，仍可回到 HexEdit 模式。
 
 # 安装
 
 ## 空白环境安装
 
-如果你的vim没有任何配置，则直接将项目克隆到家目录的 .vim 目录即可使用。
+如果你的 vim 没有任何配置，则直接将项目克隆到家目录的 .vim 目录即可使用。
 
 ```
     $ cd ~  
@@ -101,7 +100,7 @@ HexEdit 是一个工作在VIM下的插件，用于强化 VIM 的 Hex 编辑能�
 
 ## Pathogen 管理下的安装
 
-如果你是用 Pathogen 管理VIM插件的，直接将项目克隆到 ~/.vim/bundle 目录即可。
+如果你是用 Pathogen 管理 VIM 插件的，直接将项目克隆到 ~/.vim/bundle 目录即可。
 
 ```
     $ git clone https://github.com/rootkiter/vim-hexedit.git ~/.vim/bundle/vim-hexedit
