@@ -5,6 +5,8 @@ HexEdit 是一个工作在VIM下的插件，用于强化 VIM 的 Hex 编辑能�
 默认情况下 HexEdit 将把 [ \*.bin,\*.dat,\*.o ] 类型的文件视为二进制文件，并以 HexEdit 模式打开。   
 其次，也可以通过  vim -b 1.txt 的方式强制以 HexEdit 模式打开 1.txt 文件。   
 
+由于用法比较简单，此处将先讲用法，再讲安装。
+
 # Hex 编辑  
 
 ## HexEdit 模式
@@ -86,3 +88,21 @@ HexEdit 是一个工作在VIM下的插件，用于强化 VIM 的 Hex 编辑能�
 
 在该状态中无法进入插入模式，以免误操作。
 
+# 安装
+
+## 直接安装
+
+如果你的vim没有任何配置，则直接将项目克隆到家目录的 .vim 目录即可使用。
+
+```
+    $ cd ~  
+    $ git clone https://github.com/rootkiter/vim-hexedit.git ~/.vim
+```
+
+## Pathogen 管理下的安装
+
+如果你是用 Pathogen 管理VIM插件的，直接将项目克隆到 ~/.vim/bundle 目录即可。
+
+```
+    $ git clone https://github.com/rootkiter/vim-hexedit.git ~/.vim/bundle/vim-hexedit
+```
