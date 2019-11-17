@@ -35,10 +35,13 @@ endfunction
 
 function! s:HexEditUI.EnterEditMode()
     call s:HexEditUI.hookInstall()
+    let b:oldft = &l:ft
+    let &l:ft   = 'vhex'
 endfunction
 
 function! s:HexEditUI.QuitEditMode()
     call s:HexEditUI.hookUninstall()
+    let &l:ft = b:oldft
 endfunction
 
 function! s:HexEditUI.StartUp()
@@ -59,8 +62,6 @@ endfunction
 function! s:HexEditUI.convert2Hex()
     silent exe "%!xxd ". g:hexedit_xxd_options
                 \ . "| sed 's/:\\(.\\{".g:hex_area_size."\\}\\)  /:\\1  | /g'"
-    let b:oldft = &l:ft
-    let &l:ft   = 'xxd'
 endfunction
 
 function! s:HexEditUI.Stop()

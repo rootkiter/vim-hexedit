@@ -150,7 +150,10 @@ function! s:Hex2CUI.BuildInCommand(cmd)
 endfunction
 
 function! s:Hex2CUI.EnterEditMode()
+    let b:oldft = &l:ft
+    let &l:ft   = 'c'
 endfunction
 
 function! s:Hex2CUI.QuitEditMode()
+    let &l:ft = b:oldft
 endfunction

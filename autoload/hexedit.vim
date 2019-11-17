@@ -62,6 +62,7 @@ function! hexedit#ToggleHexKeep()
     elseif b:HexEditCurrentUI.Name() == "HexEditUI"
         call g:HexEditUI.QuitEditMode()
         let b:HexEditCurrentUI = g:HexKeepUI
+        call g:HexKeepUI.EnterEditMode()
         call b:HexEditCurrentUI.StartUp()
     elseif b:HexEditCurrentUI.Name() == "HexKeepUI"
         let l:flag = g:HexKeepUI.FillHexAuxiliaryInfo()
@@ -82,6 +83,7 @@ function! hexedit#ToggleHex2C()
     elseif b:HexEditCurrentUI.Name() == "HexEditUI"
         call g:HexEditUI.QuitEditMode()
         let b:HexEditCurrentUI = g:Hex2CUI
+        call g:Hex2CUI.EnterEditMode()
         call b:HexEditCurrentUI.StartUp()
     elseif b:HexEditCurrentUI.Name() == "Hex2CUI"
         call g:Hex2CUI.FillHexAuxiliaryInfo()
@@ -98,6 +100,7 @@ function! hexedit#ToggleHex2Py()
     elseif b:HexEditCurrentUI.Name() == "HexEditUI"
         call g:HexEditUI.QuitEditMode()
         let b:HexEditCurrentUI = g:Hex2PyUI
+        call g:Hex2PyUI.EnterEditMode()
         call b:HexEditCurrentUI.StartUp()
     elseif b:HexEditCurrentUI.Name() == "Hex2PyUI"
         call g:Hex2PyUI.FillHexAuxiliaryInfo()

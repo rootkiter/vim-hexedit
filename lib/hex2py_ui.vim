@@ -143,7 +143,10 @@ function! s:Hex2PyUI.BuildInCommand(cmd)
 endfunction
 
 function! s:Hex2PyUI.EnterEditMode()
+    let b:oldft = &l:ft
+    let &l:ft   = 'python'
 endfunction
 
 function! s:Hex2PyUI.QuitEditMode()
+    let &l:ft = b:oldft
 endfunction

@@ -135,7 +135,10 @@ function! s:HexKeepUI.BuildInCommand(cmd)
 endfunction
 
 function! s:HexKeepUI.EnterEditMode()
+    let b:oldft = &l:ft
+    let &l:ft = 'keephex'
 endfunction
 
 function! s:HexKeepUI.QuitEditMode()
+    let &l:ft = b:oldft
 endfunction
