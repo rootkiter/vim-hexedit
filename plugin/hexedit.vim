@@ -42,7 +42,7 @@ if has("autocmd")
         au!
 
         if !empty(g:hexedit_patterns)
-            execute printf('au BufReadPre %s setlocal binary', g:hexedit_patterns)
+            execute printf('au BufReadPre %s setlocal binary noeol', g:hexedit_patterns)
         endif
 
 

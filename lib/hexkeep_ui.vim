@@ -126,9 +126,36 @@ function! s:HexKeepUI.OnBufUnload()
 endfunction
 
 function! s:HexKeepUI.OnBufWritePre()
+    silent exe "%!xxd -r -ps"
 endfunction
 
 function! s:HexKeepUI.OnBufWritePost()
+    silent exe "%!xxd -ps"
+    let l:hex_split_frm = "\\(\\x\\{2}\\)\\(\\x\\{2}\\)"
+    let l:hex_split_to  = " \\1 \\2"
+    let l:hex_split_to2 = "\\1 \\2"
+
+    let l:total = join(getline(1, line('$')), '')
+    let l:total = substitute(l:total,
+                \ l:hex_split_frm, l:hex_split_to, 'g')
+    let l:total = substitute(l:total,
+                \ l:hex_split_frm, l:hex_split_to2, 'g')
+
+    let l:line_max_size = 3 * g:octets_per_line
+    let l:offset = 0
+    let l:linenum = 1
+    while l:offset < len(l:total)
+        if l:offset + l:line_max_size < len(l:total)
+            let l:curlinetmp = l:total[l:offset:
+                        \ l:offset + l:line_max_size-1]
+        else
+            let l:curlinetmp = l:total[l:offset:]
+        endif
+        " echom l:curlinetmp
+        call setline(l:linenum, l:curlinetmp)
+        let l:linenum += 1
+        let l:offset += l:line_max_size
+    endwhile
 endfunction
 
 function! s:HexKeepUI.BuildInCommand(cmd)
