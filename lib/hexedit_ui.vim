@@ -28,7 +28,7 @@ function! s:HexEditUI.hookUninstall()
     endif
     let l:cmdkeys = ['n', 'b', 'h']
     for key in l:cmdkeys
-        " exec "nunmap ".key
+        exec "nunmap ".key
     endfor
     let b:hooked = 0
 endfunction
