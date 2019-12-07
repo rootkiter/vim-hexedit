@@ -26,6 +26,7 @@ let g:offset_area_size = 8
 call hexedit#HexEditInitEnv()
 call hexedit#loadClassFiles()
 
+command -bar HexLoad call hexedit#HexLoad2Edit ()
 command -bar Hexedit call hexedit#ToggleHexEdit()
 command -bar Hexkeep call hexedit#ToggleHexKeep()
 command -bar Hex2C   call hexedit#ToggleHex2C  ()

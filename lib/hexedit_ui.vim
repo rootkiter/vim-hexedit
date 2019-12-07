@@ -46,17 +46,31 @@ endfunction
 
 function! s:HexEditUI.StartUp()
     let b:hexEditMode      = 1
-    let b:hex_area_size    = g:hex_area_size
-    let b:offset_area_size = g:offset_area_size
-    let b:group_cell_size  = g:group_cell_size
     call s:HexEditUI.InitVars()
     call s:HexEditUI.convert2Hex()
+    call s:HexEditUI.EnterEditMode()
+endfunction
+
+function! s:HexEditUI.HexLoadTrigger()
+    if exists("b:hexEditMode") && b:hexEditMode == 1
+        return
+    endif
+    let b:hexEditMode      = 1
+    call s:HexEditUI.InitVars()
+    silent exe "%!xxd -r -ps | xxd ".
+                \ g:hexedit_xxd_options
+                \ . "| sed 's/:\\(.\\{".
+                \ g:hex_area_size.
+                \ "\\}\\)  /:\\1  | /g'"
     call s:HexEditUI.EnterEditMode()
 endfunction
 
 function! s:HexEditUI.InitVars()
     let s:cursearchoff = 0
     let s:cursearchpattern = ""
+    let b:hex_area_size    = g:hex_area_size
+    let b:offset_area_size = g:offset_area_size
+    let b:group_cell_size  = g:group_cell_size
 endfunction
 
 function! s:HexEditUI.convert2Hex()

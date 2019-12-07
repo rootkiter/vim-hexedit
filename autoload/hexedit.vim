@@ -55,6 +55,13 @@ function! hexedit#ToggleHexEdit()
     call hexedit#toggle(g:HexEditUI)
 endfunction
 
+function! hexedit#HexLoad2Edit()
+    if hexedit#testCurrentUI() == 0
+        call g:HexEditUI.HexLoadTrigger()
+        let b:HexEditCurrentUI = g:HexEditUI
+    endif
+endfunction
+
 function! hexedit#ToggleHexKeep()
     if b:HexEditCurrentUI == {}
         echom "CurrentUI == None"
