@@ -367,35 +367,82 @@ function! s:HexEditUI.BuildInCommand(cmd, arg1)
     endif
 endfunction
 
-function! s:HexEditUI.hexSearchNext()
-    let l:lines = getline(1, line('$'))
+function! s:HexEditUI.seartInWindow(lines, li_num, li_col, pattern)
+    let l:windowlensize = 100
     let l:fmt = "\\(\\x\\{".b:offset_area_size.
                 \ "}\\):\\(.\\{".b:hex_area_size.
                 \ "}\\)  | \\(.*\\)"
     let l:split_fmt  = " \\(\\x\\{2}\\)\\(\\x\\{2}\\)"
     let l:split_tfmt = " \\1 \\2"
+    let l:bt_off = s:HexEditUI.ByteOffCalc('hex', a:li_col)
     let l:hex_area = ""
-    for l:line in l:lines
-        let l:res = matchlist(l:line, l:fmt)
-        let l:tmp1 = substitute(l:res[2],
-                    \l:split_fmt, l:split_tfmt, 'g')
-        let l:tmp1 = substitute(l:tmp1,
-                    \l:split_fmt, l:split_tfmt, 'g')
-        let l:hex_area .= l:tmp1
-    endfor
-    let l:offset = match(l:hex_area, s:cursearchpattern,
-                \s:cursearchoff)
-    let s:cursearchoff = l:offset + 2
-    let l:tt_off = ((l:offset-1)/3)
 
-    let l:line_num = l:tt_off / g:octets_per_line + 1
-    let l:bt_off   = l:tt_off % g:octets_per_line
-    let l:group    = l:bt_off / g:group_octets_num
-    let l:left     = l:bt_off % g:group_octets_num
+    let l:line_total = len(a:lines)
+    let l:hexbuffer   = ""
+    let l:cursor = 0
+    while l:cursor < l:windowlensize
+        let l:cur_cursor = a:li_num + l:cursor - 1
+        if l:line_total <= l:cur_cursor
+            break
+        endif
+        let l:linetmp = a:lines[l:cur_cursor]
+        let l:res = matchlist(l:linetmp, l:fmt)
+        if len(l:res) < 4
+            break
+        endif
+        let l:hexbuffer .= l:res[2]
+        let l:cursor += 1
+    endwhile
+    let l:hexbuffer = substitute(
+                \ l:hexbuffer,
+                \ l:split_fmt, l:split_tfmt,
+                \ 'g')
+    let l:offset = match(l:hexbuffer, a:pattern,
+                \ (l:bt_off+1)*3)
 
-    let l:col_off  = s:current_line_number_size + 3 +
-                \ l:group * b:group_cell_size + l:left*2
-    call cursor(l:line_num, l:col_off)
+    if l:offset > 0
+        let l:offnow = l:offset/3
+        let l:resline = l:offnow / g:octets_per_line + a:li_num
+        let l:resleftbts = l:offnow % g:octets_per_line
+        let l:rescol = ( l:resleftbts / g:group_octets_num ) * b:group_cell_size +
+                    \ ( l:resleftbts % g:group_octets_num ) * 2 + 1 + b:offset_area_size + 2
+        return [1, l:resline, l:rescol]
+    else
+        let l:pattbts = a:pattern/3
+        let l:needlen = l:pattbts / g:octets_per_line
+        let l:nextline = a:li_num + l:windowlensize - 1 - l:needlen
+        return [2, l:nextline, b:offset_area_size+2]
+        " None
+    endif
+    " ok, line, col
+    return [0, a:li_num, a:li_col]
+endfunction
+
+function! s:HexEditUI.hexSearchNext()
+    let l:lines = getline(0, line('$'))
+    let [l:cur_line, l:cur_col] = getpos('.')[1:2]
+    let [l:area, l:lv2, l:cmin, l:cmax, l:bmax, l:nmin] =
+                \ s:HexEditUI.columnType(l:cur_col-1)
+    let [l:tmpline, l:tmpcol] = [l:cur_line, l:cur_col]
+    while l:tmpline <= len(l:lines)
+        let l:res = s:HexEditUI.seartInWindow(
+                    \ l:lines, l:tmpline, l:tmpcol,
+                    \ s:cursearchpattern )
+        if l:res[0] == 1
+            " echom l:res[1:2]
+            call cursor(l:res[1], l:res[2])
+            return
+        elseif l:res[0] == 2
+            if l:res[1] > 0
+                let l:tmpline = l:res[1]
+                let l:tmpcol  = l:res[2]
+            else
+                break
+            endif
+        else
+        endif
+    endwhile
+    echo "Didn't found pattern -> `".s:cursearchpattern."`"
 endfunction
 
 function! s:HexEditUI.OnBufReadPost()
