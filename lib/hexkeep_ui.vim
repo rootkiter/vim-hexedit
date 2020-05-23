@@ -92,39 +92,6 @@ function! s:HexKeepUI.FillHexAuxiliaryInfo()
     return 1
 endfunction
 
-function! s:HexKeepUI.CleanEditMode()
-endfunction
-
-function! s:HexKeepUI.OnInsertEnter()
-endfunction
-
-function! s:HexKeepUI.OnInsertLeave()
-endfunction
-
-function! s:HexKeepUI.Stop()
-endfunction
-
-function! s:HexKeepUI.CreateNewFile()
-endfunction
-
-function! s:HexKeepUI.OnCursorMoved()
-endfunction
-
-function! s:HexKeepUI.OnCursorMovedI()
-endfunction
-
-function! s:HexKeepUI.OnTextChanged()
-endfunction
-
-function! s:HexKeepUI.OnBufReadPost()
-endfunction
-
-function! s:HexKeepUI.OnInsertCharPre()
-endfunction
-
-function! s:HexKeepUI.OnBufUnload()
-endfunction
-
 function! s:HexKeepUI.OnBufWritePre()
     silent exe "%!xxd -r -ps"
 endfunction

@@ -135,8 +135,8 @@ function! hexedit#ProcessEvent(event)
         if has_key(b:HexEditCurrentUI, a:event)
             let l:cmdstr = "call b:HexEditCurrentUI.".a:event."()"
             exec l:cmdstr
-        else
-            echom "Error ".b:HexEditCurrentUI.Name().".".a:event
+        "else
+        "    echom "Error ".b:HexEditCurrentUI.Name().".".a:event
         endif
     endif
 endfunction

@@ -115,35 +115,8 @@ endfunction
 function! s:Hex2CUI.CreateNewFile()
 endfunction
 
-function! s:Hex2CUI.OnCursorMoved()
-endfunction
-
-function! s:Hex2CUI.OnCursorMovedI()
-endfunction
-
 function! s:Hex2CUI.OnInsertEnter()
     call feedkeys("\<esc>")
-endfunction
-
-function! s:Hex2CUI.OnInsertLeave()
-endfunction
-
-function! s:Hex2CUI.OnTextChanged()
-endfunction
-
-function! s:Hex2CUI.OnBufReadPost()
-endfunction
-
-function! s:Hex2CUI.OnInsertCharPre()
-endfunction
-
-function! s:Hex2CUI.OnBufUnload()
-endfunction
-
-function! s:Hex2CUI.OnBufWritePre()
-endfunction
-
-function! s:Hex2CUI.OnBufWritePost()
 endfunction
 
 function! s:Hex2CUI.BuildInCommand(cmd)

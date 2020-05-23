@@ -108,35 +108,11 @@ endfunction
 function! s:Hex2PyUI.CreateNewFile()
 endfunction
 
-function! s:Hex2PyUI.OnCursorMoved()
-endfunction
-
-function! s:Hex2PyUI.OnCursorMovedI()
-endfunction
-
 function! s:Hex2PyUI.OnInsertEnter()
     call feedkeys("\<esc>")
 endfunction
 
-function! s:Hex2PyUI.OnInsertLeave()
-endfunction
-
-function! s:Hex2PyUI.OnTextChanged()
-endfunction
-
 function! s:Hex2PyUI.OnBufReadPost()
-endfunction
-
-function! s:Hex2PyUI.OnInsertCharPre()
-endfunction
-
-function! s:Hex2PyUI.OnBufUnload()
-endfunction
-
-function! s:Hex2PyUI.OnBufWritePre()
-endfunction
-
-function! s:Hex2PyUI.OnBufWritePost()
 endfunction
 
 function! s:Hex2PyUI.BuildInCommand(cmd)

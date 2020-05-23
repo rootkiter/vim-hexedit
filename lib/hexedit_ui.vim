@@ -457,7 +457,7 @@ function! s:HexEditUI.hexSearchNext()
         else
         endif
     endwhile
-    echo "Didn't found pattern -> `".s:cursearchpattern."`"
+    echom "Didn't found pattern -> `".s:cursearchpattern."`"
 endfunction
 
 function! s:HexEditUI.OnBufReadPost()
