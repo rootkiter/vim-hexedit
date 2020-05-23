@@ -18,6 +18,7 @@ function! s:HexEditUI.hookInstall()
         for key in l:cmdkeys
             exec "nnoremap <silent> ".key." :call g:HexEditUI.NormalKeyMap(\"".key."\") <CR>"
         endfor
+        exec "nnoremap <silent> <Left> :call g:HexEditUI.NormalKeyMap(\"h\") <CR>"
         let b:hooked = 1
     endif
 endfunction
@@ -26,7 +27,7 @@ function! s:HexEditUI.hookUninstall()
     if !exists("b:hooked") || b:hooked != 1
         return
     endif
-    let l:cmdkeys = ['n', 'b', 'h']
+    let l:cmdkeys = ['n', 'b', 'h', '<Left>']
     for key in l:cmdkeys
         exec "nunmap ".key
     endfor

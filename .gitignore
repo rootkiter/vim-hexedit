@@ -1,0 +1,4 @@
+./lib/*.swp
+./imgs/*.swp
+./syntax/*.swp
+./autoload/*.swp
