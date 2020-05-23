@@ -130,68 +130,13 @@ function! hexedit#OnBufReadPost()
     endif
 endfunction
 
-function! hexedit#OnInsertEnter()
+function! hexedit#ProcessEvent(event)
     if hexedit#testCurrentUI() == 1
-        call b:HexEditCurrentUI.OnInsertEnter()
-    endif
-endfunction
-
-function! hexedit#OnInsertLeave()
-    if hexedit#testCurrentUI() == 1
-        call b:HexEditCurrentUI.OnInsertLeave()
-    endif
-endfunction
-
-function! hexedit#OnTextChanged()
-    if hexedit#testCurrentUI() == 1
-        call b:HexEditCurrentUI.OnTextChanged()
-    endif
-endfunction
-
-function! hexedit#OnCursorMoved()
-    if hexedit#testCurrentUI() == 1
-        call b:HexEditCurrentUI.OnCursorMoved()
-    endif
-endfunction
-
-function! hexedit#OnCursorMovedI()
-    if hexedit#testCurrentUI() == 1
-        call b:HexEditCurrentUI.OnCursorMovedI()
-    endif
-endfunction
-
-function! hexedit#OnInsertCharPre()
-    if hexedit#testCurrentUI() == 1
-        call b:HexEditCurrentUI.OnInsertCharPre()
-    endif
-endfunction
-
-function! hexedit#OnBufWritePost()
-    if hexedit#testCurrentUI() == 1
-        call b:HexEditCurrentUI.OnBufWritePost()
-    endif
-endfunction
-
-function! hexedit#OnBufUnload()
-    if hexedit#testCurrentUI() == 1
-        call b:HexEditCurrentUI.OnBufUnload()
-    endif
-endfunction
-
-function! hexedit#OnBufWritePre()
-    if hexedit#testCurrentUI() == 1
-        call b:HexEditCurrentUI.OnBufWritePre()
-    endif
-endfunction
-
-function! hexedit#OnBufLeave()
-    if hexedit#testCurrentUI() == 1
-        call b:HexEditCurrentUI.QuitEditMode()
-    endif
-endfunction
-
-function! hexedit#OnBufEnter()
-    if hexedit#testCurrentUI() == 1
-        call b:HexEditCurrentUI.EnterEditMode()
+        if has_key(b:HexEditCurrentUI, a:event)
+            let l:cmdstr = "call b:HexEditCurrentUI.".a:event."()"
+            exec l:cmdstr
+        else
+            echom "Error ".b:HexEditCurrentUI.Name().".".a:event
+        endif
     endif
 endfunction

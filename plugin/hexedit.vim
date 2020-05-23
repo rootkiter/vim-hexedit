@@ -51,22 +51,21 @@ if has("autocmd")
         au BufNewFile    * call hexedit#OnBufNewFile()   
 
         au BufReadPost   * call hexedit#OnBufReadPost()
-        au CursorMoved   * call hexedit#OnCursorMoved()
-        au CursorMovedI  * call hexedit#OnCursorMovedI()
+        au CursorMoved   * call hexedit#ProcessEvent("OnCursorMoved")
+        au CursorMovedI  * call hexedit#ProcessEvent("OnCursorMovedI")
 
-        au InsertEnter   * call hexedit#OnInsertEnter()
-        au InsertLeave   * call hexedit#OnInsertLeave()
-        au TextChanged   * call hexedit#OnTextChanged()
-        " au InsertLeave   * call s:Echom("InsertLeave")
+        au InsertEnter   * call hexedit#ProcessEvent("OnInsertEnter")
+        au InsertLeave   * call hexedit#ProcessEvent("OnInsertLeave")
+        au TextChanged   * call hexedit#ProcessEvent("OnTextChanged")
 
-        au BufUnload     * call hexedit#OnBufUnload()
-        au BufEnter      * call hexedit#OnBufEnter()
-        au BufLeave      * call hexedit#OnBufLeave()
+        au BufUnload     * call hexedit#ProcessEvent("OnBufUnload")
+        au BufEnter      * call hexedit#ProcessEvent("OnBufEnter")
+        au BufLeave      * call hexedit#ProcessEvent("OnBufLeave")
 
-        au InsertCharPre * call hexedit#OnInsertCharPre()
+        au InsertCharPre * call hexedit#ProcessEvent("OnInsertCharPre")
 
-        au BufWritePre   * call hexedit#OnBufWritePre()
+        au BufWritePre   * call hexedit#ProcessEvent("OnBufWritePre")
 
-        au BufWritePost  * call hexedit#OnBufWritePost()
+        au BufWritePost  * call hexedit#ProcessEvent("OnBufWritePost")
     augroup END
 endif
