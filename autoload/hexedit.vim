@@ -5,7 +5,7 @@ let g:loaded_autoload_hexedit = 1
 
 
 function! hexedit#version()
-    return '1.0.0'
+    return '1.0.4'
 endfunction
 
 function! hexedit#loadClassFiles()
