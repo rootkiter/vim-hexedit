@@ -218,6 +218,23 @@ g:hexedit_cache_window_ratio  (default: 3)
 g:hexedit_c_varname    (default: 'buf')
         Variable name used in C view mode's `unsigned char NAME[] = {...}`.
 
+                                            *g:hexedit_highlight_byte_value*
+g:hexedit_highlight_byte_value  (default: 0)
+        Every occurrence of this byte value (0-255) is highlighted
+        distinctly in Hex Edit mode's hex column; defaults to 0, so null
+        bytes stand out. Set to -1 to disable entirely. Byte-boundary
+        aware: correctly distinguishes a real occurrence of the target
+        byte from a look-alike digit pair that happens to straddle two
+        different bytes within the same |g:group_octets_num| cell (e.g.
+        bytes 0xF0 then 0x0A render as "f00a", which must not falsely
+        highlight "00"), and correctly highlights every matching byte even
+        when several in a row share the target value (e.g. all of "0000").
+
+                                          *g:hexedit_highlight_byte_hlgroup*
+g:hexedit_highlight_byte_hlgroup  (default: 'NonText')
+        Highlight group the target byte (see |g:hexedit_highlight_byte_value|)
+        is linked to.
+
 ==============================================================================
 7. Architecture (for contributors)                     *hexedit-architecture*
 

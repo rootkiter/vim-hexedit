@@ -103,6 +103,8 @@ loads:
 | `g:hexedit_window_size` | `65536` | base window-size unit (bytes) |
 | `g:hexedit_cache_window_ratio` | `3` | cache window = this × `g:hexedit_window_size` |
 | `g:hexedit_c_varname` | `'buf'` | variable name used by C view mode |
+| `g:hexedit_highlight_byte_value` | `0` | byte value (0-255) to highlight distinctly in the hex column (defaults to highlighting null bytes); set to `-1` to disable |
+| `g:hexedit_highlight_byte_hlgroup` | `'NonText'` | highlight group the target byte links to |
 
 Full reference: `:help hexedit`.
 

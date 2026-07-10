@@ -20,6 +20,12 @@ let g:hexedit_cache_window_ratio   = get(g:, 'hexedit_cache_window_ratio', 3)
 
 let g:hexedit_c_varname = get(g:, 'hexedit_c_varname', 'buf')
 
+" Highlight every occurrence of a specific byte value distinctly in Hex Edit
+" mode's hex column. Defaults to 0 (0x00 bytes). Set to -1 to disable
+" entirely. See syntax/vhex.vim.
+let g:hexedit_highlight_byte_value   = get(g:, 'hexedit_highlight_byte_value', 0)
+let g:hexedit_highlight_byte_hlgroup = get(g:, 'hexedit_highlight_byte_hlgroup', 'NonText')
+
 " ---- Commands (REQUIREMENTS.md 3) -------------------------------------
 " :Hexedit :Hexkeep :Hex2C :Hex2Py from the pre-refactor plugin are
 " removed without a compatibility alias, per REQUIREMENTS.md 3.

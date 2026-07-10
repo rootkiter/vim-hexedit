@@ -92,6 +92,8 @@ ascii 列开头——是在当前行 hex/ascii 之间快速切换的最快方式
 | `g:hexedit_window_size` | `65536` | 窗口大小的基础单位（字节） |
 | `g:hexedit_cache_window_ratio` | `3` | 缓存窗口 = 该值 × `g:hexedit_window_size` |
 | `g:hexedit_c_varname` | `'buf'` | C 视图模式使用的变量名 |
+| `g:hexedit_highlight_byte_value` | `0` | 在 hex 列里单独高亮显示的目标字节值（0-255，默认高亮 0x00）；设成 `-1` 关闭该功能 |
+| `g:hexedit_highlight_byte_hlgroup` | `'NonText'` | 目标字节链接到的高亮组 |
 
 完整参考文档：`:help hexedit`。
 

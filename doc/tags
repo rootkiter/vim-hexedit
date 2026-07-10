@@ -10,6 +10,8 @@
 g:group_octets_num	hexedit.txt	/*g:group_octets_num*
 g:hexedit_c_varname	hexedit.txt	/*g:hexedit_c_varname*
 g:hexedit_cache_window_ratio	hexedit.txt	/*g:hexedit_cache_window_ratio*
+g:hexedit_highlight_byte_hlgroup	hexedit.txt	/*g:hexedit_highlight_byte_hlgroup*
+g:hexedit_highlight_byte_value	hexedit.txt	/*g:hexedit_highlight_byte_value*
 g:hexedit_large_file_threshold	hexedit.txt	/*g:hexedit_large_file_threshold*
 g:hexedit_low_up	hexedit.txt	/*g:hexedit_low_up*
 g:hexedit_patterns	hexedit.txt	/*g:hexedit_patterns*
