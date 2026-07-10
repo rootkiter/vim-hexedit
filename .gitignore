@@ -1,4 +1,2 @@
-./lib/*.swp
-./imgs/*.swp
-./syntax/*.swp
-./autoload/*.swp
+*.swp
+tests/.last_run.log

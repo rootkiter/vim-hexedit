@@ -1,0 +1,252 @@
+*hexedit.txt*  Hex editing in Vim/Neovim, backed by xxd
+
+Author:  rootkiter
+License: same as Vim itself
+
+==============================================================================
+CONTENTS                                                   *hexedit-contents*
+
+    1. Introduction ............................ |hexedit-introduction|
+    2. Modes .................................... |hexedit-modes|
+    3. Commands .................................. |hexedit-commands|
+    4. Auto-trigger .............................. |hexedit-autotrigger|
+    5. Large files ............................... |hexedit-large-files|
+    6. Configuration .............................. |hexedit-config|
+    7. Architecture (for contributors) ............ |hexedit-architecture|
+
+==============================================================================
+1. Introduction                                        *hexedit-introduction*
+
+vim-hexedit lets you view and edit binary files as hex from inside Vim or
+Neovim, using the external `xxd` tool for the actual byte<->hex conversion.
+It supports four interactive modes plus a placeholder for a future
+format-aware mode, and is built around a small internal architecture
+documented in REQUIREMENTS.md at the repository root (that document is the
+authoritative design reference; this help file is the user-facing summary).
+
+Requires: `xxd`, `dd`, `sh`, `head`, `tail` on $PATH (all standard on
+Unix-like systems).
+
+==============================================================================
+2. Modes                                                      *hexedit-modes*
+
+Four modes exist today, plus one architectural placeholder. Only two of
+them allow editing; the buffer is set `nomodifiable` automatically for the
+other two.
+
+Hex 编辑模式 (Hex Edit mode)                                  *hexedit-mode-hedit*
+    Entered with |:Hedit|. The core editing surface: offset | hex | ascii
+    columns. The cursor can never rest on the offset column or on the
+    inter-group spacing/separator; typing in the hex or ascii column
+    overwrites the current byte in place (never shifts surrounding bytes).
+    At the end of the buffer, typing appends a new byte/line.
+
+Hex 字串模式 (Hex string mode)                                  *hexedit-mode-hex*
+    Entered with |:Hex|. Shows only the grouped hex digits, e.g.
+    "4141 4242 ... 4343 4444", with no offset/ascii columns. Unlike Hex Edit
+    mode, this allows free insertion/deletion, i.e. it can change the total
+    byte count. Validated (even length, valid hex digits) when you switch
+    away from it; invalid content blocks the switch with a message.
+
+C 语言视图模式 (C view mode)                                    *hexedit-mode-h2c*
+    Entered with |:H2C|. Read-only. Renders
+    `unsigned char buf[] = { 0x41, 0x42, ... };` with a `// ASCII` comment
+    per line. The variable name is |g:hexedit_c_varname|.
+
+Python 视图模式 (Python view mode)                             *hexedit-mode-h2py*
+    Entered with |:H2Py|. Read-only. Renders a Python-3-compatible
+    `bytes.fromhex("...")` expression (not the Python-2-only
+    `.decode('hex')` idiom).
+
+格式解析模式 (Format-parse mode)                          *hexedit-mode-format-parse*
+    Architecturally reserved, not functionally implemented. Currently
+    renders identically to Hex Edit mode's dump. Exists to prove the mode
+    registry generalizes past 4 modes and to reserve a home
+    (autoload/hexedit/parsers/) for future per-file-format field parsers
+    that would highlight byte ranges by semantic meaning.
+
+==============================================================================
+3. Commands                                                *hexedit-commands*
+
+:Hedit                                                                *:Hedit*
+        Switch to Hex Edit mode. Only valid while already inside the
+        plugin's mode state machine (see |hexedit-autotrigger| /
+        |:HexLoad| for how to enter it). Works from any of the other
+        internal modes directly (no need to bounce back through Hedit
+        first).
+
+:Hex                                                                    *:Hex*
+        Switch to Hex string mode. Same entry-state requirement as |:Hedit|.
+
+:H2C                                                                    *:H2C*
+        Switch to C view mode (read-only).
+
+:H2Py                                                                  *:H2Py*
+        Switch to Python view mode (read-only).
+
+:HexLoad                                                            *:HexLoad*
+        Treat the current buffer's text as a hex string (whitespace is
+        ignored) and enter the plugin's mode state machine in Hex Edit
+        mode. This is one of only two commands that cross the boundary
+        between plain Vim editing and the plugin (the other is
+        |:HexDump|); the four mode-switch commands above never do.
+
+        If the buffer already has a filename, you'll be asked once, up
+        front: when saving, keep the file in its *original* (binary) form
+        (decode and overwrite the file with raw bytes), or convert it to a
+        *hex string* (keep writing the hex-string form back to the same
+        file)? There's no default-without-asking here on purpose, since the
+        file started out as text and silently deciding to overwrite it
+        with binary would be surprising. An unnamed buffer has no file to
+        protect, so this is skipped.
+
+:HexDump                                                            *:HexDump*
+        Works from any active mode (Hex Edit, Hex string, C view, Python
+        view), not just Hex Edit mode. Converts the current content to Hex
+        string text and permanently leaves the plugin's mode state machine
+        -- the buffer becomes a normal Vim text buffer again. To go back to
+        binary editing, run |:HexLoad| again; there is no quick toggle back
+        on purpose. In large-file windowed mode (see |hexedit-large-files|),
+        this only dumps the currently loaded window, not the whole file.
+
+:HGoto {offset}                                                        *:HGoto*
+        Jump to an absolute byte offset in the file. {offset} accepts
+        decimal ("100") or 0x-prefixed hex ("0x64"). In large-file
+        windowed mode this reloads/recenters the cache window around the
+        target offset; in normal mode it just moves the cursor.
+
+:Hsearch {hex}                                                  *:Hsearch*
+        Search forward for a hex byte sequence (e.g. "41414141") from Hex
+        Edit mode. Press `n` to repeat the search (this temporarily
+        overrides `n`'s normal "repeat last search" behavior while a
+        pattern is active).
+
+:HsearchClean                                              *:HsearchClean*
+        Clear the active |:Hsearch| pattern and restore `n`'s normal
+        behavior.
+
+Tip: `f|` jumps the cursor to the `|` column separator, which combined
+with the plugin's cursor-snapping lands you at the start of the ascii
+column -- a fast way to jump from hex to ascii on the current line.
+
+==============================================================================
+4. Auto-trigger                                          *hexedit-autotrigger*
+
+Hex Edit mode is entered automatically in three situations:
+
+1. Opening any file in Vim's binary mode (`vim -b file`, `:e ++bin file`,
+   or `:set binary` on an existing buffer).
+2. Opening a file whose name matches |g:hexedit_patterns| (by default
+   `*.bin,*.dat,*.hex,*.o`) -- this path fully avoids reading the file
+   into Vim's own buffer first (see |hexedit-large-files|), unlike (1)
+   which cannot avoid Vim's own read for an arbitrary filename.
+3. Running |:HexLoad| on a buffer containing hex-string text.
+
+==============================================================================
+5. Large files                                          *hexedit-large-files*
+
+Files larger than |g:hexedit_large_file_threshold| are not loaded in full.
+Instead, only a "cache window" of |g:hexedit_window_size| *
+|g:hexedit_cache_window_ratio| bytes is read (via `xxd -s -l`) and shown.
+Scrolling near the edge of the loaded window (and it not being the start
+or end of the file) triggers a reload centered on your new position; use
+|:HGoto| to jump to an arbitrary offset directly.
+
+Every reload aligns the window's start to a multiple of |g:octets_per_line|
+(the file's own row grid, e.g. 0x10 by default), so a given file byte
+always lands in the same column no matter which window happens to have it
+loaded -- matching how a normal hex dump addresses bytes.
+
+`G` and `gg` are overridden in Hex Edit mode to mean "end/start of the
+whole FILE" (reloading the cache window if needed), not just "end/start of
+whatever is currently loaded" -- native Vim `G`/`gg` are buffer-relative,
+which would otherwise only reach the edges of the loaded window.
+
+Saving (`:w`) a fixed-length edit (the normal case in Hex Edit mode) patches
+just that byte range of the file in place via `dd`, without touching the
+rest of the file. If your edit changed the number of bytes in the window
+(e.g. by dropping into Hex string mode and inserting/deleting), saving
+requires rewriting the whole file and you will be prompted to confirm,
+since this can be slow on a large file.
+
+Note: the sliding-window reload never fires while the buffer has unsaved
+changes, to avoid silently discarding edits -- save first, or use
+|:HGoto| explicitly.
+
+==============================================================================
+6. Configuration                                               *hexedit-config*
+
+                                                        *g:group_octets_num*
+g:group_octets_num     (default: 2)
+        Number of bytes grouped together in one hex "cell", e.g. "4142".
+
+                                                        *g:octets_per_line*
+g:octets_per_line      (default: 16)
+        Number of bytes shown per line.
+
+                                                        *g:hexedit_low_up*
+g:hexedit_low_up       (default: 'lower')
+        'lower' or 'upper': case of hex digits in Hex Edit / Hex string
+        views (backed by xxd's `-u` flag).
+
+                                                        *g:hexedit_patterns*
+g:hexedit_patterns     (default: '*.bin,*.dat,*.hex,*.o')
+        Comma-separated glob patterns that trigger automatic binary-mode
+        Hex Edit opening, see |hexedit-autotrigger|.
+
+                                                    *g:hexedit_xxd_options*
+g:hexedit_xxd_options  (default: '')
+        Extra flags appended verbatim to the `xxd` invocation used to
+        render Hex Edit mode.
+
+                                          *g:hexedit_large_file_threshold*
+g:hexedit_large_file_threshold  (default: 1048576, i.e. 1MB)
+        File size (bytes) above which large-file windowed editing kicks
+        in. See |hexedit-large-files|.
+
+                                                   *g:hexedit_window_size*
+g:hexedit_window_size  (default: 65536)
+        Base unit (bytes) for the large-file cache window; the actual
+        cache window is this times |g:hexedit_cache_window_ratio|.
+
+                                             *g:hexedit_cache_window_ratio*
+g:hexedit_cache_window_ratio  (default: 3)
+        Multiplier applied to |g:hexedit_window_size| to get the actual
+        cache window size.
+
+                                                     *g:hexedit_c_varname*
+g:hexedit_c_varname    (default: 'buf')
+        Variable name used in C view mode's `unsigned char NAME[] = {...}`.
+
+==============================================================================
+7. Architecture (for contributors)                     *hexedit-architecture*
+
+See REQUIREMENTS.md at the repository root for the full design rationale.
+Summary of the source layout:
+
+    plugin/hexedit.vim                 command/autocmd registration only
+    autoload/hexedit.vim               top-level dispatch, auto-trigger,
+                                        large-file window sliding
+    autoload/hexedit/model.vim         Canonical Model: byte storage via
+                                        xxd/dd, never raw binary in a Vim
+                                        String (see the file's header
+                                        comment for why)
+    autoload/hexedit/registry.vim      mode registration + the
+                                        View<->Model<->View switch dance
+    autoload/hexedit/platform.vim      Vim/Neovim differences (async jobs,
+                                        highlighting) isolated here only
+    autoload/hexedit/modes/*.vim       one file per mode; each implements
+                                        Renderable (required) and
+                                        optionally Editable
+    autoload/hexedit/parsers/          reserved for future format parsers
+    tests/                             dependency-free Vimscript test
+                                        suite; run with:
+                                        `nvim --headless -u NONE -c "source tests/run.vim"`
+                                        (NOT `-es -S`, see tests/run.vim's
+                                        header comment for why)
+
+A mode is read-only simply by not defining a `ViewToBinary` key; the
+registry enforces `nomodifiable` for it automatically. Adding a new mode
+does not require touching the registry, model, or any existing mode file.
+
+vim:tw=78:ts=8:ft=help:norl:
